@@ -1,0 +1,514 @@
+Milestone 1:
+Rotor Design and Mission-Planning Foundations
+20% of the full course, graded out of 100 points. Due Date: 28th August
+
+Work Share, Academic Integrity, Late Submission Policy
+
+ò  Team  Work:  Every  team  member  must  understand  and  be  able  to  explain  the  complete  workflow,
+
+governing assumptions, code modules, design decisions, and reported results.
+
+ò  Academic integrity: Discussion across teams is encouraged, but copying code, plots, design choices,
+or written analysis is not permitted. Unattributed reuse may result in zero credit for all involved.
+ò  Late submission policy: Submissions after deadline will attract 5% penalty for each 1 hour delay. For
+
+example, 15% will be deducted from the assignment grades if the submission happens at 3 AM.
+
+Project Context
+
+Your team is developing the preliminary aerodynamic-design and mission-analysis tools for a twin-rotor
+tiltrotor aircraft. At this  stage, the rotors must be evaluated in  helicopter  mode and propeller-like  axial
+forward flight. The same aerodynamic model must serve as the backend of a mission planner that tracks
+aircraft mass, rotor limits, power demand, power available, and fuel use.
+
+Learning Objectives
+
+ò
+
+Implement a flexible Blade Element Momentum Theory (BEMT) solver and establish numerical
+credibility through validation.
+
+ò  Understand the influence of blade geometry, collective pitch, rotational speed, and advance ratio on
+
+rotor thrust, torque, power, efficiency, and stall.
+
+ò  Select and justify a preliminary tiltrotor rotor design that performs acceptably in hover and axial
+
+forward flight.
+
+ò  Build the first version of a segment-based mission planner with continuous feasibility checks.
+
+Tasks
+
+1. BEMT tool
+
+Develop  a  modular  BEMT  solver  for  a  rotor  with  selectable  blade  number,  radius,  root  cut-out,  radial
+chord/taper,  radial  twist,  airfoil  data,  collective  pitch,  rotational  speed,  altitude,  temperature  offset,
+climb/descent velocity, and axial forward velocity. Include iterative induced-velocity solution and Prandtl
+tip loss; root loss may be included if justified.
+
+2. Aerodynamic limits
+
+Use angle-dependent airfoil lift and drag data or a documented model. Detect sectional stall and report
+the radial/azimuthal location and fraction of the blade operating beyond the adopted stall criterion.
+
+Rotary-Wing Aerodynamics Course Project | Tiltrotor Helicopter   |   1
+
+3. Validation
+
+Validate  hover  predictions  against  a  published  experimental  rotor  dataset  by  Knight  and  Hefner  [1].
+Compare at least thrust coefficient, power/torque coefficient, and figure of merit over a useful collective
+or thrust range. Quantify error using at least two metrics and discuss model limitations.
+
+Details on rotor geometry and airfoil from the paper are provided in the following table:
+
+Radius
+Root Cut-out
+Number of blades
+
+Chord length
+
+Cl
+
+Cd
+
+Rotor
+0.762 m
+0.125 m
+2/3/4/5
+(choose any one for your analysis)
+0.0508 m
+Airfoil
+
+= ao ?
+= 5.75 ?
+= Cd(min) + ? ?2
+= 0.0113 + 1.25 ?2
+
+[1] Knight, M., & Hefner, R. A. (1937). Static thrust analysis of the lifting airscrew.
+
+4. Design-variable study
+
+For the validation rotor or another documented baseline, independently vary solidity, blade number, taper
+ratio,  linear  twist,  root  cut-out,  and  rotational  speed.  Use  sufficient  points  to  reveal  trends  and  explain
+changes.
+
+5. Tiltrotor rotor design
+
+Define a preliminary twin-rotor tiltrotor aircraft and select the rotor airfoil(s), radius, number of blades,
+RPM schedule, chord distribution, twist distribution,  root cut-out,  and allowable collective range. State
+disk loading, tip Mach number, solidity, and design constraints.
+
+6. Hover assessment
+
+Generate  thrust,  torque,  power,  stall  margin,  versus  collective  for  relevant  altitudes  and  gross  weights.
+Establish hover ceiling or maximum hover weight subject to power and stall constraints.
+
+7. Axial forward-flight / propeller assessment
+
+Evaluate the rotor at several propeller advance ratios J and collective settings, with the rotor axis aligned
+with  the  freestream.  Report  thrust  coefficient,  power  coefficient,  propulsive  efficiency,  blade-angle-of-
+attack distribution, and feasible operating envelope. Identify a suitable cruise operating point.
+
+8. Comparable-rotor benchmarking
+
+Compare  the  proposed  rotor  against  at  least  two  comparable  tiltrotor,  proprotor,  or  large  propeller
+datasets/designs  using  nondimensional  metrics.  Differences  in  size  and  operating  condition  must  be
+normalized and discussed.
+
+Rotary-Wing Aerodynamics Course Project | Tiltrotor Helicopter   |   2
+
+9. Mission Planner v1
+
+Create a mission planner supporting hover, vertical climb/descent, axial airplane-mode cruise, loiter, and
+payload  pickup/drop.  Update  fuel  and  gross  weight  at  user-defined  time  intervals.  Account  for  reserve
+fuel,  atmospheric  variation,  wind  during  cruise,  engine/drive  losses,  and  an  engine  or  motor  power-
+available model.
+
+10. Feasibility warnings
+
+At each time step, check fuel  availability, power  margin,  rotor stall,  tip Mach number, RPM/collective
+bounds,  and  any  additional  adopted  design  limit.  Clearly  identify  the  segment,  time,  and  reason  for
+mission failure.
+
+Demonstration Cases
+
+ò  Validation rotor: reproduce experimental curves and show error metrics.
+ò  Common team aircraft: hover at sea level and at a high-altitude condition; axial cruise over at least
+
+ò
+
+four advance ratios.
+Identify maximum hover gross weight, a feasible cruise operating region, and the selected design
+point.
+
+ò  Mission test: complete one feasible payload mission and one deliberately infeasible mission,
+
+explaining the first violated constraint.
+
+Prescribed Report Structure and Mark Distribution
+
+Each team must submit one consolidated report following the numbering and order below. Marks are
+awarded subsection-wise.
+
+Report Slides (100 points)
+
+The  report  must  integrate  tool  development,  validation,  aircraft  design,  performance  assessment,
+trim/envelope  analysis,  and  mission-level  demonstrations.  All  members  are  jointly  responsible  for  the
+complete submission.
+
+Section / subsection
+
+Team Member
+Contribution
+[Mandatory]
+1. Starting Assumptions
+and Data
+
+1.1 Physics assumptions
+and data
+
+1.2 Environmental
+assumptions and data
+
+Refer to the table given later. Individual marks will be scaled
+based on the table entries.
+
+Content
+
+Marks
+0
+
+List all assumptions and data used in developing the rotor-
+performance tool, aircraft design, propulsion model, and mission
+planner. Assumptions should not remain undocumented within the
+code.
+State the BEMT assumptions, steady or quasi-steady treatment,
+blade-element independence, induced-flow model, Prandtl loss
+correction, compressibility treatment, stall criterion, and neglected
+physical effects.
+Describe the atmospheric model, ISA temperature offset, altitude
+range, density, viscosity, speed of sound, wind convention, and
+other environmental assumptions.
+
+2
+
+2
+
+2
+
+1.3 Vehicle and propulsion  State assumptions related to aircraft mass, twin-rotor arrangement,
+
+Rotary-Wing Aerodynamics Course Project | Tiltrotor Helicopter   |   3
+
+assumptions and data
+
+2. Algorithm and Logic
+Flow Diagrams
+
+2.1 Rotor Performance
+Estimator/BEMT tool
+
+2.2 Mission Planner v1
+
+3. BEMT Validation
+against Experimental
+Data
+3.1 Validation rotor and
+data preparation
+
+3.2 Thrust comparison
+
+3.3 Torque or power
+comparison
+3.4 Observations and
+model limitations
+
+4. Rotor Design-Variable
+Study
+
+4.1 Solidity or blade-
+number variation
+4.2 Taper-ratio variation
+4.3 Twist variation
+5. Tiltrotor Aircraft
+Definition and Rotor
+Design
+5.1 Aircraft-specific
+assumptions and design
+philosophy
+5.2 Aircraft schematic and
+configuration
+
+5.3 Aircraft mass and
+design requirements
+
+drivetrain losses, engine or motor model, variation of power
+available, fuel model or specific fuel consumption, and reserve-
+fuel policy.
+Show the complete organization of the rotor-performance
+estimator and Mission Planner v1, including the exchange of data
+between the two tools.
+Provide a flow diagram and explanation covering user inputs,
+atmospheric calculations, blade geometry, airfoil-data lookup,
+iterative inflow solution, sectional-force calculation, radial
+integration, rotor coefficients, stall and tip-Mach checks,
+convergence, and output generation.
+Provide a flow diagram and explanation covering mission inputs,
+segment sequencing, time stepping, aircraft-mass update, fuel
+burn, power required and available, payload events, wind, reserve
+fuel, and mission-failure warnings.
+Validate the developed rotor-performance tool against a suitable
+published experimental rotor dataset.
+
+Provide rotor geometry, blade number, airfoil model, operating
+conditions, experimental-data source, and any transformations
+required to reconcile coefficient definitions.
+Plot experimental and BEMT thrust or thrust coefficient against
+collective pitch or the corresponding experimental control
+parameter on the same axes.
+Plot experimental and BEMT torque, power, torque coefficient, or
+power coefficient on the same axes.
+Explain agreement and disagreement with the experimental data,
+likely causes of discrepancies, the valid operating range of the
+model, and implications for subsequent rotor design.
+Use the validated tool to isolate the effects of major rotor design
+variables. Use at least four meaningful values for each continuous
+variable.
+Plot thrust, power, thrust/power w.r.t solidity. Discuss
+
+Plot thrust, power, thrust/power w.r.t taper ratio. Discuss
+Plot thrust, power, thrust/power w.r.t twist. Discuss
+Define the single tiltrotor aircraft designed by the team and justify
+its principal aircraft and rotor parameters.
+
+State assumptions specific to the selected aircraft that are not
+already covered under the general modeling assumptions. Explain
+the intended role and broad design philosophy of the aircraft.
+Provide a labeled and approximately dimensioned schematic
+showing the twin proprotors, wing, fuselage, tilting nacelles,
+empennage, landing gear, payload region, and relevant component
+locations.
+State gross mass, empty mass estimate, payload, fuel capacity,
+takeoff altitude, service ceiling, range, speed targets, hover
+requirements, and adopted design constraints.
+
+Rotary-Wing Aerodynamics Course Project | Tiltrotor Helicopter   |   4
+
+8
+
+5
+
+2
+
+4
+
+4
+
+2
+
+4
+
+4
+4
+
+3
+
+3
+
+4
+
+5.4 Rotor design table
+
+5.5 Rotor-design rationale
+and trade-offs
+
+6. Rotor Operating Maps
+and Performance
+Assessment
+6.1 Hover performance
+maps
+
+6.2 Axial forward-flight
+performance maps
+
+6.3 Comparison with
+comparable rotors
+
+7. Mission Planner v1
+Implementation and
+Tests
+7.1 Mission-planner
+implementation
+verification
+
+7.2 Fuel-burn rate versus
+gross weight
+7.3 Hover endurance
+versus takeoff weight
+7.4 Cruise range versus
+cruise speed
+7.5 Overall design
+observations and Milestone
+2 requirements
+8. Code Package,
+References, and
+Acknowledgement
+8.1 Code organization and
+reproducibility
+
+8.2 References
+
+8.3 Acknowledgement and
+assistance disclosure
+
+Tabulate airfoil, radius, rotational speed or RPM schedule,
+number of blades, chord and taper distribution, twist distribution,
+root cut-out, collective-pitch range, solidity.
+Explain how the rotor parameters were selected using the
+validation and design-variable studies. Discuss the principal
+compromise between hover efficiency, axial forward-flight
+efficiency, stall margin, tip Mach number, and power requirement.
+Apply the developed BEMT tool to the rotor of the designed
+tiltrotor aircraft.
+
+Plot thrust, torque, power, blade-angle-of-attack against collective
+pitch at a relevant altitude. Identify stall- and power-limited
+operating regions.
+
+At several advance ratios and collective-pitch settings, plot thrust
+coefficient, power coefficient, propulsive efficiency, blade-angle-
+of-attack distribution, and feasible operating limits.
+Compare the designed rotor with one relevant proprotors, tiltrotor
+rotors, or large propellers using suitable nondimensional
+parameters. Explain whether the predicted performance is
+acceptable and discuss important differences.
+Apply Mission Planner v1 to the designed tiltrotor aircraft. The
+mission planner should use the developed rotor-performance
+estimator as its aerodynamic backend.
+Demonstrate correct segment sequencing, mass continuity,
+payload pickup or drop, fuel update, atmospheric variation, wind
+treatment, reserve-fuel accounting, power-required calculation,
+power-available calculation, and failure-warning logic.
+Plot fuel-burn rate against gross weight for hover and explain the
+observed trend.
+Plot hover endurance against takeoff weight, including the
+adopted reserve-fuel requirement.
+Plot cruise range against cruise speed, including the adopted
+reserve-fuel requirement.
+Summarize the main hoverûcruise compromise, dominant aircraft
+limitations, sensitivity to major assumptions
+
+Submit the complete reproducible code package with the report.
+This is the only references and acknowledgement section in the
+report.
+Submit modular source code, README instructions, dependency
+or environment file, validation data, example input files, aircraft
+configuration file, and scripts required to reproduce all graded
+plots and tables.
+List all books, journal papers, reports, databases, software
+packages, and websites used for theory, validation data, airfoil
+data, propulsion data, aircraft comparisons, and numerical
+methods.
+Acknowledge people consulted and disclose any external code,
+generative-AI assistance, or other support used in accordance with
+
+Rotary-Wing Aerodynamics Course Project | Tiltrotor Helicopter   |   5
+
+5
+
+4
+
+5
+
+8
+
+4
+
+3
+
+3
+
+3
+
+3
+
+3
+
+3
+
+2
+
+1
+
+the course policy.
+Total
+
+100
+
+Team-Member Contribution Record
+
+The team must report each memberÆs contribution level and specific responsibilities. The contribution
+level may be used as a scaling factor for team marks.
+
+Roll No.
+
+Name
+
+Level (0û5)
+
+Specific contribution  Signature
+
+Sr.
+No.
+
+Contribution-level descriptors:
+
+5: Completed assigned work to good quality; understood and could explain it.
+4: Completed assigned work to acceptable quality, with minor guidance or corrections.
+3: Partially completed the work and made a genuine effort to correct or learn it.
+2: Work was substantially incomplete or incorrect, with limited effort to resolve issues.
+1: Was responsive but did not complete the promised work or learn the required method.
+0: Was unresponsive and made no meaningful contribution.
+
+Submission Requirements
+
+ò  One consolidated team report in PDF format and one compressed code package per team.
+ò  The code package must include a README, environment/dependency file, input examples,
+
+validation data, and scripts required to reproduce all graded figures.
+
+ò  All figures must contain axis labels with units, legends, readable annotations, and captions stating the
+
+flight condition and assumptions.
+
+ò  All assumptions, data sources, correlations, and external code/packages must be cited. Assistance
+received from people or generative-AI tools must be acknowledged as required by course policy.
+
+Code and Reproducibility Requirements
+
+ò  Python is preferred. Any alternative must be free/opensource, freely accessible to the teaching team
+
+and must not obstruct reproducibility.
+
+ò  Use modular functions/classes for atmosphere, airfoil data, blade geometry, inflow, blade-element
+
+loads, rotor integration, trim, propulsion, and mission segments.
+
+ò  Keep units internally consistent, document sign conventions and reference frames, and include checks
+
+for nonphysical inputs or failed convergence.
+
+ò  Do not hard-code a single aircraft or mission. Geometry, operating condition, controls, and mission
+
+segments must be user inputs.
+
+Rotary-Wing Aerodynamics Course Project | Tiltrotor Helicopter   |   6
+
+ò  A numerical result without convergence checks, validation, or physical interpretation will receive
+
+limited credit.
+
+Rotary-Wing Aerodynamics Course Project | Tiltrotor Helicopter   |   7
+
+

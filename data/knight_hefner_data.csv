@@ -1,0 +1,13 @@
+collective_deg,CT_exp,CQ_exp
+# Approximate values representative of Knight & Hefner (1937) NACA TN-626
+# for a 2-blade rotor, R=0.762 m, chord=0.0508 m, at ~1250 RPM, sea level, untwisted.
+# IMPORTANT: Replace these with values digitized from the actual published
+# K&H figure before submitting your report. Cite the exact source.
+# Convention: CT=T/(rho*A*(Omega*R)^2), CQ=Q/(rho*A*(Omega*R)^2*R)
+2,0.000380,0.0000440
+4,0.000920,0.0000760
+6,0.001680,0.0001210
+8,0.002610,0.0001840
+10,0.003580,0.0002660
+12,0.004490,0.0003680
+14,0.005120,0.0005000
