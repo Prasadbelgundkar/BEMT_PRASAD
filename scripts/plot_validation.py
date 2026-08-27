@@ -12,6 +12,7 @@ Prints RMSE and MAPE for CT and CQ.
 Saves to outputs/validation_CT_CQ_FM.png
 """
 import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import matplotlib.pyplot as plt

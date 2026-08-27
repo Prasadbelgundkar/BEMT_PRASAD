@@ -20,8 +20,9 @@ Coverage:
     tip-Mach limit, stall limit, RPM limit, collective limit, payload event
   - Rotor geometry: solidity, disk area, tip speed, tip Mach
 """
-import sys
-import os
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+
 import pytest
 import numpy as np
 

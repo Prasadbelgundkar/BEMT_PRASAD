@@ -118,7 +118,8 @@ class MissionPlanner:
                  num_rotors: int, empty_mass_kg: float, fuel_mass_kg: float,
                  power_model: PowerAvailableModel, fuel_model: FuelModel,
                  limits: DesignLimits, g: float = 9.80665,
-                 flat_plate_area_m2: float = 1.7):
+                 flat_plate_area_m2: float = 1.7,
+                 step_callback: Optional[Callable[[MissionState], None]] = None):
         self.rotor = rotor
         self.airfoil_provider = airfoil_provider
         self.num_rotors = num_rotors
@@ -130,6 +131,7 @@ class MissionPlanner:
         self.state = MissionState(gross_mass_kg=empty_mass_kg + fuel_mass_kg,
                                    fuel_mass_kg=fuel_mass_kg)
         self.empty_mass_kg = empty_mass_kg
+        self.step_callback = step_callback
 
     def _check_limits(self, seg: MissionSegment, perf, P_req_W: float, P_avail_W: float):
         if perf.max_tip_mach > self.limits.max_tip_mach:
@@ -175,12 +177,23 @@ class MissionPlanner:
         if seg.seg_type == SegmentType.VERTICAL_DESCENT:
             return W
         if seg.seg_type == SegmentType.CRUISE:
-            # Airplane mode: wing assumed to carry weight; rotors sized for
-            # propulsive thrust to overcome drag. (D = 0.5*rho*V^2*f)
-            # Using the V-22 scale equivalent flat plate area: f = 1.7 m^2
+            # Airplane mode: total drag = parasite drag + induced drag
             atmo = isa(seg.altitude_m, seg.dISA_K)
             V = seg.cruise_speed_mps
-            drag_N = 0.5 * atmo.density_kg_m3 * V**2 * self.flat_plate_area_m2
+            q = 0.5 * atmo.density_kg_m3 * V**2
+            
+            # Parasite Drag
+            D_parasite = q * self.flat_plate_area_m2
+            
+            # Induced Drag (L = W, D_i = L^2 / (q * pi * AR * e))
+            # Hardcoding the wing parameters designed earlier (S=39.24, AR=9.0, e=0.8)
+            wing_area = 39.24
+            AR = 9.0
+            e = 0.8
+            L = self.state.gross_mass_kg * 9.81
+            D_induced = (L**2) / (q * wing_area * np.pi * e * AR)
+            
+            drag_N = D_parasite + D_induced
             return drag_N
         return W
 
@@ -210,12 +223,30 @@ class MissionPlanner:
             else:
                 v_axial = 0.0
 
-            perf = run_bemt(self.rotor, self.airfoil_provider, omega,
-                             np.radians(seg.collective_deg), atmo.density_kg_m3,
-                             atmo.speed_of_sound_mps, v_axial=v_axial)
+            # -----------------------------------------------------------------
+            # AUTO-TRIM & FUEL OPTIMIZATION ENGINE
+            # -----------------------------------------------------------------
+            target_total_thrust = self._required_thrust_N(seg)
+            target_per_rotor = target_total_thrust / self.num_rotors
+            
+            # Use Auto-Trim just for the collective (fixes RPM to user choice for performance)
+            omega = 2 * np.pi * seg.rpm / 60.0
+            best_coll, perf = self._optimize_trim(target_per_rotor, omega, atmo, v_axial)
+            best_rpm = seg.rpm
+            
+            if perf is None:
+                raise MissionInfeasibleError(
+                    seg.name, self.state.time_s, 
+                    f"Aero Auto-Trim Failed: Could not find any valid Collective pitch to generate required thrust ({target_per_rotor:.0f} N) at {seg.rpm} RPM.")
 
+            # Temporarily update segment state so limit checks process the optimized values
+            original_rpm = seg.rpm
+            original_coll = seg.collective_deg
+            seg.rpm = best_rpm
+            seg.collective_deg = best_coll
+            
             P_req_W = self.num_rotors * perf.power_W
-            P_avail_W = self.num_rotors * self.power_model.power_available_W(atmo)  # total, all rotors
+            P_avail_W = self.num_rotors * self.power_model.power_available_W(atmo)
 
             self._check_limits(seg, perf, P_req_W, P_avail_W)
 
@@ -225,8 +256,6 @@ class MissionPlanner:
             self.state.gross_mass_kg -= fuel_burned
             self.state.time_s += seg.dt_s
 
-            # Check fuel reserve AFTER deduction so violations are caught on the
-            # exact step that causes the breach, not one step late.
             if self.state.fuel_mass_kg < self.limits.reserve_fuel_kg:
                 raise MissionInfeasibleError(
                     seg.name, self.state.time_s,
@@ -237,13 +266,85 @@ class MissionPlanner:
                 time_s=self.state.time_s, segment=seg.name,
                 gross_mass_kg=self.state.gross_mass_kg,
                 fuel_mass_kg=self.state.fuel_mass_kg,
+                rpm=best_rpm, collective_deg=best_coll,
                 thrust_N=self.num_rotors * perf.thrust_N,
                 power_req_W=P_req_W, power_avail_W=P_avail_W,
                 max_tip_mach=perf.max_tip_mach,
                 stalled_fraction=perf.stalled_fraction,
             ))
+            
+            if self.step_callback:
+                self.step_callback(self.state)
+            
+            # Restore segment defaults just in case (though optimizer will override next tick anyway)
+            seg.rpm = original_rpm
+            seg.collective_deg = original_coll
 
     def run_mission(self, segments: List[MissionSegment]):
         for seg in segments:
             self.run_segment(seg)
         return self.state
+        
+    def _optimize_trim(self, target_thrust_per_rotor: float, omega: float, atmo, v_axial: float):
+        """Uses Brent's method to find the exact collective pitch that generates the required thrust."""
+        def residual(coll_deg: float) -> float:
+            perf = run_bemt(self.rotor, self.airfoil_provider, omega,
+                            np.radians(coll_deg), atmo.density_kg_m3,
+                            atmo.speed_of_sound_mps, v_axial=v_axial)
+            return perf.thrust_N - target_thrust_per_rotor
+
+        c_min, c_max = self.limits.min_collective_deg, self.limits.max_collective_deg
+        
+        # Check if the target thrust is even possible within the collective limits
+        f_min = residual(c_min)
+        f_max = residual(c_max)
+        
+        if not (np.isfinite(f_min) and np.isfinite(f_max)): return None, None
+        if f_min * f_max > 0: return None, None  # Target thrust not achievable in this bracket
+
+        try:
+            from scipy.optimize import brentq
+            opt_coll = brentq(residual, c_min, c_max, xtol=0.05, maxiter=60)
+            perf = run_bemt(self.rotor, self.airfoil_provider, omega,
+                            np.radians(opt_coll), atmo.density_kg_m3,
+                            atmo.speed_of_sound_mps, v_axial=v_axial)
+            return opt_coll, perf
+        except Exception:
+            return None, None
+
+    def _find_optimal_efficiency(self, target_thrust_per_rotor: float, atmo, v_axial: float, fallback_rpm: float):
+        """Scans allowed RPMs to find the most fuel-efficient (lowest power) state that trims the aircraft."""
+        best_rpm = None
+        best_coll = None
+        best_perf = None
+        min_power = float('inf')
+
+        # Scan RPM range in steps of 25 to find optimal aerodynamic efficiency
+        for test_rpm in np.arange(self.limits.min_rpm, self.limits.max_rpm + 1, 25.0):
+            if test_rpm <= 0: continue
+            
+            omega = 2 * np.pi * test_rpm / 60.0
+            
+            # Fast Mach check to skip RPMs that are obviously supersonic
+            tip_speed = omega * self.rotor.radius_m
+            mach = np.sqrt(tip_speed**2 + v_axial**2) / atmo.speed_of_sound_mps
+            if mach > self.limits.max_tip_mach:
+                continue
+                
+            coll, perf = self._optimize_trim(target_thrust_per_rotor, omega, atmo, v_axial)
+            
+            if perf is not None and perf.converged:
+                if perf.stalled_fraction <= self.limits.max_stall_fraction:
+                    if perf.power_W < min_power:
+                        min_power = perf.power_W
+                        best_rpm = test_rpm
+                        best_coll = coll
+                        best_perf = perf
+                        
+        if best_perf is None:
+            # Fallback to user-provided RPM if the sweep fails
+            omega = 2 * np.pi * fallback_rpm / 60.0
+            coll, perf = self._optimize_trim(target_thrust_per_rotor, omega, atmo, v_axial)
+            return fallback_rpm, coll, perf
+            
+        return best_rpm, best_coll, best_perf

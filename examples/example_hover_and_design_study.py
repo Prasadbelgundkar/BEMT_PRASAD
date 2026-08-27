@@ -4,6 +4,7 @@ design-variable study on the validation rotor. Extend this pattern for
 taper, twist, blade number, root cutout, and RPM sweeps (Section 4).
 """
 import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np

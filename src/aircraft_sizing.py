@@ -42,6 +42,11 @@ def run_sizing():
     q_cruise = 0.5 * rho_cruise * V_cruise**2
     TW_cruise = (q_cruise * f) / W + WS_range / (q_cruise * np.pi * e * AR)
     
+    # A2. Econ Cruise (V = 74.3 m/s at Cruise Alt, n=1, ROC=0)
+    V_econ = 74.3
+    q_econ = 0.5 * rho_cruise * V_econ**2
+    TW_econ = (q_econ * f) / W + WS_range / (q_econ * np.pi * e * AR)
+    
     # B. Climb (ROC = 10 m/s at V = 80 m/s at SL, n=1)
     V_climb = 80.0
     ROC_climb = 10.0
@@ -76,7 +81,8 @@ def run_sizing():
     plt.figure(figsize=(16, 9))
     
     # Plot Curves
-    plt.plot(WS_range, TW_cruise, label='Cruise (125 m/s)', color='blue', linewidth=2.5)
+    plt.plot(WS_range, TW_cruise, label='Max Dash (125 m/s)', color='blue', linewidth=2.5)
+    plt.plot(WS_range, TW_econ, label='Best Range Cruise (74.3 m/s)', color='cyan', linewidth=2.5, linestyle='--')
     plt.plot(WS_range, TW_climb, label='Climb (ROC 10 m/s)', color='green', linewidth=2.5)
     plt.plot(WS_range, TW_turn, label='Turn (n=2, 60 deg bank)', color='purple', linewidth=2.5)
     plt.plot(WS_range, TW_ceil, label='Ceiling (10000m Alt)', color='orange', linewidth=2.5)

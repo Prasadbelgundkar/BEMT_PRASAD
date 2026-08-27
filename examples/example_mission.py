@@ -7,6 +7,7 @@ Replace the placeholder rotor / mass / power numbers with your team's
 actual Task 5 tiltrotor design before using this for your report.
 """
 import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np

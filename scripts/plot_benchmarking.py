@@ -12,6 +12,7 @@ Nondimensional metrics: CT/sigma vs CP/sigma, FM vs CT/sigma.
 Note: Reference values are approximate from open literature; cite properly.
 """
 import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import matplotlib.pyplot as plt

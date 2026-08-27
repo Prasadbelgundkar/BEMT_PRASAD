@@ -11,6 +11,7 @@ All aircraft parameters from aircraft_input.py.
 7.4: Cruise range vs cruise speed
 """
 import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import matplotlib.pyplot as plt

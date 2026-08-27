@@ -23,19 +23,22 @@ ROOT_CUTOUT_M = 0.5       # Root cutout radius (meters)
 NUM_BLADES = 3            # Number of blades per rotor
 
 # Chord / Taper
-ROOT_CHORD_M = 0.45       # Chord length at the root (meters)
-TAPER_RATIO = 1.0         # Tip chord / Root chord (1.0 = constant chord)
+ROOT_CHORD_M = 0.90       # Chord length at the root (meters)
+TAPER_RATIO = 0.3888      # Tip chord / Root chord (0.35m / 0.90m)
 
 # Twist
-TWIST_ROOT_DEG = 15.0     # Built-in twist at the root (degrees)
-TWIST_RATE_DEG = -30.0    # Twist change from root to tip (degrees). (15 to -15 = -30)
+TWIST_ROOT_DEG = 25.0     # Massive built-in positive twist at the root
+TWIST_RATE_DEG = -45.0    # V-22 Osprey style extreme twist (-45 degrees to the tip!)
 
 # Airfoils
 # If using the blended CSV approach we just built, you would uncomment this:
-#AIRFOIL_PROVIDER = BlendedLinearAirfoilProvider.from_csv("data/my_blended_airfoils.csv")
+import os
+# Construct absolute path to the data folder based on where parameters.py is located
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+AIRFOIL_PROVIDER = BlendedLinearAirfoilProvider.from_csv(os.path.join(DATA_DIR, "my_blended_airfoils.csv"))
 
 # use a simple constant linear airfoil provider so it runs out-of-the-box:
-AIRFOIL_PROVIDER = lambda x: LinearAirfoil()
+#AIRFOIL_PROVIDER = lambda x: LinearAirfoil()
 
 # ==========================================
 # 3. OPERATING CONDITIONS
@@ -81,7 +84,7 @@ NUM_ENGINES = 2
 MAX_TIP_MACH = 0.90
 MAX_STALL_FRACTION = 0.40       # Allow 40% stall during high-speed cruise
 MIN_POWER_MARGIN_FRAC = 0.05    # 5% safety margin on power
-RESERVE_FUEL_KG = 100.0         # Absolute minimum fuel allowed
+RESERVE_FUEL_KG = 450.0         # Absolute minimum fuel allowed
 
 # ==========================================
 # 7. MISSION PROFILE (Flight Plan)
@@ -97,9 +100,9 @@ LANDING_ALTITUDE_AMSL_M = 0.0
 # dt_s = Time between aerodynamic calculations (in seconds)
 MISSION_PLAN = [
     # (Name, Type, Duration[s], Alt[m], RPM, Collective[deg], Vertical/Cruise Speed[m/s], dt_s)
-    ("Takeoff hover", "HOVER", 60, TAKEOFF_ALTITUDE_AMSL_M, 550, 8.0, 0.0, 60),
-    ("Climb to Ceiling", "VERTICAL_CLIMB", 600, CLIMB_ALTITUDE_AMSL_M, 550, 10.0, 5.0, 300),
-    ("High-Alt Cruise", "CRUISE", 8000, CRUISE_ALTITUDE_AMSL_M, 450, 54.5, 125.0, 1000),
-    ("Troop Drop Hover", "HOVER", 120, DROP_ALTITUDE_AMSL_M, 550, 5.0, 0.0, 120),
-    ("Landing hover", "HOVER", 60, LANDING_ALTITUDE_AMSL_M, 550, 8.0, 0.0, 60),
+    ("Takeoff hover", "HOVER", 60, TAKEOFF_ALTITUDE_AMSL_M, 550, 8.0, 0.0, 10),
+    ("Climb to Ceiling", "VERTICAL_CLIMB", 600, CLIMB_ALTITUDE_AMSL_M, 550, 10.0, 5.0, 30),
+    ("Max Range Cruise (30% Reserve)", "CRUISE", 25500, CRUISE_ALTITUDE_AMSL_M, 250, 54.5, 74.3, 60),
+    ("Troop Drop Hover", "HOVER", 120, DROP_ALTITUDE_AMSL_M, 550, 5.0, 0.0, 10),
+    ("Landing hover", "HOVER", 60, LANDING_ALTITUDE_AMSL_M, 550, 8.0, 0.0, 10),
 ]
