@@ -1,0 +1,32 @@
+======================================================
+    TILTROTOR AIRCRAFT SIZING REPORT (AIRPLANE MODE)
+======================================================
+Mass Overview:
+  Empty Mass:   4500.0 kg
+  Payload:      1200.0 kg
+  Fuel:         1500.0 kg
+  Total Mass:   7200.0 kg
+  Weight (W):   70632.0 N
+
+Design Point (Selected from Constraint Analysis):
+  Wing Loading (W/S): 859.5 N/m^2
+  Thrust/Weight (T/W): 0.119
+  Required Thrust:    8412.1 N
+
+Wing Sizing (Assumed Aspect Ratio = 9.0):
+  Surface Area (S):   82.18 m^2
+  Wingspan (b):       27.20 m
+  Average Chord (c):  3.02 m
+  Airfoil Rec:        NACA 64A223 (Root) / NACA 64A212 (Tip) - High-subsonic tiltrotor standard (e.g., V-22)
+
+  Rotor Clearance Check:
+  Rotor Radius:       3.8 m
+  (Total wingspan must be > 7.6m so rotors clear the fuselage)
+  Status: CLEAR
+
+Empennage (NOTAR) Sizing:
+  (Based on typical volume coeffs: V_HT=1.0, V_VT=0.08)
+  Tail Moment Arm (L_tail): 12.24 m
+  Horizontal Tail Area:     20.29 m^2
+  Vertical Tail Area:       14.61 m^2
+======================================================
