@@ -102,7 +102,7 @@ MISSION_PLAN = [
     # (Name, Type, Duration[s], Alt[m], RPM, Collective[deg], Vertical/Cruise Speed[m/s], dt_s)
     ("Takeoff hover", "HOVER", 60, TAKEOFF_ALTITUDE_AMSL_M, 550, 8.0, 0.0, 10),
     ("Climb to Ceiling", "VERTICAL_CLIMB", 600, CLIMB_ALTITUDE_AMSL_M, 550, 10.0, 5.0, 30),
-    ("Max Range Cruise (30% Reserve)", "CRUISE", 25500, CRUISE_ALTITUDE_AMSL_M, 250, 54.5, 74.3, 60),
+    ("Max Range Cruise (30% Reserve)", "CRUISE", 25500, CRUISE_ALTITUDE_AMSL_M, 250, 56.5, 74.3, 60),
     ("Troop Drop Hover", "HOVER", 120, DROP_ALTITUDE_AMSL_M, 550, 5.0, 0.0, 10),
     ("Landing hover", "HOVER", 60, LANDING_ALTITUDE_AMSL_M, 550, 8.0, 0.0, 10),
 ]
