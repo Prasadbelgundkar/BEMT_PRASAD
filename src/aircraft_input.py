@@ -42,26 +42,26 @@ def airfoil_provider(x):
 # ============================================================
 # SECTION 2 -- ROTOR GEOMETRY
 # ============================================================
-ROTOR_RADIUS_M  = 3.0     # tip radius [m]
-ROOT_CUTOUT_M   = 0.45    # root cutout radius [m] (= 0.15 R)
+ROTOR_RADIUS_M  = 3.8     # tip radius [m]
+ROOT_CUTOUT_M   = 0.50    # root cutout radius [m] (= 0.132 R)
 NUM_BLADES      = 3       # number of blades
 
 # Chord distribution (choose one and comment the other):
-ROOT_CHORD_M = 0.30                              # root chord [m]
-TAPER_RATIO  = 0.70                              # tip_chord / root_chord
+ROOT_CHORD_M = 0.90                              # root chord [m]
+TAPER_RATIO  = 0.3888                            # tip_chord / root_chord  (tip = 0.35 m)
 CHORD_FN     = linear_taper_chord(ROOT_CHORD_M, TAPER_RATIO)
 # CHORD_FN   = constant_chord(0.28)              # OR constant chord
 
 # Twist distribution -- built-in twist; collective is added on top:
-TWIST_ROOT_DEG       = 15.0    # pitch at blade root [deg]
-TWIST_RATE_DEG_PER_R = -20.0  # linear washout rate [deg per unit r/R]
+TWIST_ROOT_DEG       = 25.0    # pitch at blade root [deg]
+TWIST_RATE_DEG_PER_R = -45.0  # linear washout rate [deg per unit r/R]  (V-22 Osprey style)
 TWIST_FN = linear_twist(np.radians(TWIST_ROOT_DEG), np.radians(TWIST_RATE_DEG_PER_R))
 # TWIST_FN = constant_twist(0.0)                 # OR untwisted
 
 # Assemble rotor object (used by all scripts)
 ROTOR = Rotor(
     radius_m=ROTOR_RADIUS_M, root_cutout_m=ROOT_CUTOUT_M, num_blades=NUM_BLADES,
-    chord_fn=CHORD_FN, twist_fn=TWIST_FN, name="TW-1500 Proprotor",
+    chord_fn=CHORD_FN, twist_fn=TWIST_FN, name="TW-7200 Proprotor",
 )
 
 # ============================================================
@@ -69,7 +69,7 @@ ROTOR = Rotor(
 # ============================================================
 HOVER_RPM  = 500.0   # rotor speed in hover / helicopter mode [RPM]
 CRUISE_RPM = 700.0   # rotor speed in axial cruise / propeller mode [RPM]
-                     # At J~0.57 (V=40 m/s, 700 RPM, R=3.0 m), tip Mach~0.66, stall<5%
+                     # At J~0.57 (V=74 m/s, 700 RPM, R=3.8 m), tip Mach~0.87
 
 HOVER_OMEGA  = 2 * np.pi * HOVER_RPM  / 60.0   # [rad/s]
 CRUISE_OMEGA = 2 * np.pi * CRUISE_RPM / 60.0   # [rad/s]
@@ -80,7 +80,7 @@ MAX_COLLECTIVE_DEG = 25.0
 
 # Default collective angles (auto-trim will refine hover collective)
 HOVER_COLLECTIVE_DEG  = 10.0   # initial guess [deg]
-CRUISE_COLLECTIVE_DEG = 20.0   # propeller-mode cruise [deg] -- max efficiency near J=0.57
+CRUISE_COLLECTIVE_DEG = 20.0   # propeller-mode cruise [deg]
 
 # ============================================================
 # SECTION 4 -- TWIN-ROTOR ARRANGEMENT
@@ -90,11 +90,11 @@ NUM_ROTORS = 2  # total proprotors on the aircraft (each identical)
 # ============================================================
 # SECTION 5 -- AIRCRAFT MASSES [kg]
 # ============================================================
-GROSS_MASS_KG   = 1500.0   # maximum takeoff mass
-EMPTY_MASS_KG   =  900.0   # operating empty mass (incl. crew)
-PAYLOAD_KG      =  300.0   # design payload
-FUEL_MASS_KG    =  300.0   # usable fuel onboard
-RESERVE_FUEL_KG =   30.0   # mandatory reserve fuel
+GROSS_MASS_KG   = 7200.0   # maximum takeoff mass (empty + payload + fuel)
+EMPTY_MASS_KG   = 4500.0   # operating empty mass (incl. crew)
+PAYLOAD_KG      = 1200.0   # design payload (2 pilots + 10 pax @ 100 kg each)
+FUEL_MASS_KG    = 1500.0   # usable fuel onboard
+RESERVE_FUEL_KG =  450.0   # mandatory reserve fuel
 
 # ============================================================
 # SECTION 6 -- PERFORMANCE REQUIREMENTS & ENVIRONMENT
