@@ -1,121 +1,112 @@
-# Tiltrotor BEMT + Mission Planner — Milestone 1 Starter Codebase
+# Tiltrotor BEMT + Mission Planner — Milestone 1 & 2 Codebase
 
-Modular Python implementation of a BEMT rotor-performance tool and Mission
-Planner v1, built around the architecture in your notes (Environment /
-Geometry / BEMT Solver / Mission Planner modules).
+Modular Python implementation of a BEMT rotor-performance tool, 3-DOF trim solver, and Mission Planner, designed to evaluate tiltrotor aircraft configurations across hover, conversion, and forward flight.
 
-**Read this before you touch the report.** This is a working *foundation*,
-not a finished submission. What's real vs. what's a placeholder is called
-out explicitly below and in code comments — replace every placeholder with
-your team's actual data and design choices, and disclose AI assistance per
-Section 8.3 of the handout.
+This repository covers the complete architecture detailed in your assignments for **Milestone 1 (Hover & Axial Flow)** and **Milestone 2 (Forward Flight, Trim & Transition)**. 
+
+---
+
+## What's New in Milestone 2
+- **Edgewise Forward Flight BEMT**: The rotor solver now discretizes the disk azimuthally and radially, applying Glauert's momentum equation for non-uniform inflow, handling reversed flow, and incorporating cyclic pitch.
+- **3-DOF Longitudinal Trim Solver**: Uses optimization (`scipy.optimize.root`) to balance total aircraft forces ($F_x$, $F_z$) and pitching moment ($M_y$) by solving for angle of attack ($\alpha$), collective pitch ($\theta_0$), and longitudinal control.
+- **Control Actuator Blending**: Automatically shifts longitudinal control authority from cyclic pitch (helicopter mode, nacelle > 45°) to elevator deflection (airplane mode, nacelle < 45°).
+- **Conversion Corridor Mapping**: Sweeps airspeed and nacelle angles to map the feasible trim envelope for transition.
+- **Interactive GUI**: A new interactive Streamlit application (`gui_app/app.py`) for rapid design parameter sweeping, airfoil comparison, and performance plotting.
+
+---
 
 ## Install
 
 ```bash
+# Core computational requirements
 pip install numpy scipy matplotlib
+
+# To run the Milestone 2 Interactive GUI
+pip install -r gui_app/requirements_gui.txt
 ```
 
-## File map -> assignment tasks
+---
 
+## Architecture & File Map
+
+### Milestone 2: Forward Flight & Trim (`src/m2/`)
+| File | Description |
+|---|---|
+| `edgewise_bemt.py` | Core rotor aerodynamic solver for edgewise forward flight |
+| `aero_models.py` | Aerodynamic models for fixed-wing components (wing & h-tail) |
+| `trim_solver.py` | 3-DOF longitudinal trim solver |
+| `conversion_corridor.py` | Maps feasible trim states across nacelle and velocity sweeps |
+| `frames.py` | Rigid body coordinate transformations |
+| `scripts/m2/` | Demonstration scripts (transition sweep, mission profile, trim matrix) |
+| `tests/m2/` | Pytest suite for the trim solver, frames, and recovery behaviors |
+
+*(See [Milestone_2_Architecture.md](Milestone_2_Architecture.md) for a detailed architecture diagram and methodology breakdown).*
+
+### Milestone 1: Hover & Axial Flow (`src/` and `scripts/`)
 | File | Assignment task(s) |
 |---|---|
 | `environment.py` | ISA model — Section 1.2 |
 | `airfoil.py` | Airfoil Cl/Cd model + stall flagging — Task 2 |
-| `rotor.py` | Blade geometry (chord/twist distributions, solidity, tip Mach) — Task 1, 5.4 |
-| `bemt.py` | Core BEMT solver: iterative inflow, Prandtl tip loss, P-G compressibility correction — Task 1 |
+| `rotor.py` | Blade geometry (chord/twist distributions, solidity, tip Mach) |
+| `bemt.py` | Core axial BEMT solver (iterative inflow, Prandtl tip loss) |
 | `validation.py` | Hover validation vs. Knight & Hefner — Task 3 |
-| `mission.py` | Mission Planner v1 + feasibility checks — Task 9, 10 |
-| `examples/example_hover_and_design_study.py` | Hover maps + design-variable study — Task 4, 6.1 |
-| `examples/example_axial_forward_flight.py` | Propeller-mode / advance-ratio sweep — Task 7 |
-| `examples/example_mission.py` | Feasible + deliberately infeasible mission — Demonstration Cases |
-| `data/knight_hefner_template.csv` | **You must fill this in** with digitized experimental data |
 
-## What is REAL vs. PLACEHOLDER
+---
 
-**Real / directly from the handout:**
-- Validation rotor geometry (R=0.762 m, root cutout=0.125 m, chord=0.0508 m)
-  and the linear airfoil model (Cl = 5.75*alpha, Cd = 0.0113 + 1.25*alpha^2)
-  in `validation.py` / `airfoil.LinearAirfoil`.
-- The BEMT physics: blade-element / momentum-theory equating, iterative
-  induced-velocity solve, Prandtl tip loss, stall flagging, Prandtl-Glauert
-  compressibility correction, CT/CQ/CP/FM/propulsive-efficiency definitions.
-- The mission-planner mechanics: segment sequencing, time-stepping, mass/fuel
-  update, feasibility checks that raise `MissionInfeasibleError` with
-  segment/time/reason (Task 10).
+## Quick Start
 
-**Placeholder — YOU must replace before submitting:**
-- `NUM_BLADES` and the test RPM (`OMEGA_RAD_S`) in `validation.py` — set
-  to your team's chosen blade count and the actual Knight & Hefner test
-  condition.
-- The experimental CT/CQ data in `data/knight_hefner_template.csv` — I did
-  not have access to digitize the actual published figure; you need real
-  numbers here, not invented ones.
-- Every rotor/aircraft number in the `examples/` scripts (radius, chord,
-  twist, RPM, collective, cruise speed, gross mass, power available, SFC)
-  — these were tuned only to make the demos internally self-consistent
-  (non-stalled, converged) using a small toy rotor, NOT your Task 5
-  tiltrotor design.
-- `mission.py`'s `_required_thrust_N` for CRUISE currently returns 0 (wing
-  assumed to carry weight in airplane mode) — you'll want to add a real
-  drag model (D = 0.5 rho V^2 S CD) for your aircraft if you want the
-  mission planner to size cruise thrust automatically rather than take
-  user-specified collective/RPM directly.
-- Mission Planner v1 does **not** auto-trim collective to hold weight —
-  you supply collective/RPM per segment. Consider adding a root-find
-  ("solve for collective such that T = W") as a Milestone 2 improvement,
-  since right now getting a physically consistent mission requires you to
-  pre-sweep operating points yourself (as the examples do).
-
-## Quick start
-
+### Milestone 2 Examples
 ```bash
-# 1. Sanity-check the solver
-python3 -c "
-from environment import isa
-from airfoil import LinearAirfoil
-from rotor import Rotor, constant_chord, constant_twist
-from bemt import run_bemt
-import numpy as np
-atmo = isa(0.0, 0.0)
-rotor = Rotor(0.762, 0.125, 2, constant_chord(0.0508), constant_twist(0.0))
-perf = run_bemt(rotor, lambda x: LinearAirfoil(), 2*np.pi*1000/60, np.radians(8), atmo.density_kg_m3, atmo.speed_of_sound_mps)
-print(perf.thrust_N, perf.torque_Nm, perf.figure_of_merit)
-"
+# 1. Run a conversion corridor sweep
+python scripts/m2/demo_corridor_map.py
 
-# 2. Validation (after filling in data/knight_hefner_data.csv)
-python3 validation.py
+# 2. Sweep cyclic/elevator control effectiveness
+python scripts/m2/demo_control_sweep.py
 
-# 3. Design study + hover maps
-python3 examples/example_hover_and_design_study.py
-
-# 4. Axial forward-flight sweep
-python3 examples/example_axial_forward_flight.py
-
-# 5. Mission planner demo (feasible + infeasible)
-python3 examples/example_mission.py
+# 3. Simulate a full tiltrotor mission profile
+python scripts/m2/demo_full_mission.py
 ```
 
-## Known modeling limitations (put these in Section 3.4 / 1.1)
+### Launch the Interactive GUI
+```bash
+cd gui_app
+streamlit run app.py
+```
 
-- The linear Cl-alpha model has no physical post-stall behavior; past the
-  adopted stall angle (12 deg, `LinearAirfoil.stall_alpha_rad`) Cl is
-  clipped and Cd inflated as a simple engineering fix — replace with a
-  measured/tabulated polar (`TableAirfoil`) if you need believable
-  post-stall numbers, especially for your Task 5 design at high collective
-  or high forward speed.
-- No dynamic stall, no unsteady aerodynamics, no wake distortion/vortex
-  interaction model, no blade flexibility — steady/quasi-steady BEMT only,
-  axisymmetric inflow (no azimuthal variation), consistent with "axial
-  flow rotor" scope of this milestone.
-- Prandtl-Glauert correction is frozen (not applied) above M=0.7 rather
-  than extrapolated, since P-G itself becomes invalid there — you rely on
-  the tip-Mach feasibility check to flag those conditions instead.
+### Milestone 1 Examples
+```bash
+# 1. Validation vs Knight & Hefner (requires filled CSV data)
+python gui_app/src/validation.py
 
-## Academic integrity note
+# 2. Axial forward-flight performance
+python scripts/plot_axial_flight.py
+```
 
-Per the handout: discussion across teams is fine, copying code/analysis is
-not, and generative-AI assistance must be disclosed (Section 8.3). This
-codebase was produced with AI assistance — say so in your report, and make
-sure every team member can actually explain how the BEMT loop, tip-loss
-correction, and mission feasibility checks work, since that's graded too.
+---
+
+## Known Modeling Limitations
+
+**Milestone 2 Assumptions:**
+- **Rigid Blades**: Flapping dynamics are ignored ($\beta = 0$). Hub moments are computed purely from aerodynamic force asymmetries.
+- **Symmetric Flight**: Assumes purely longitudinal motion with no side-slip ($\beta_{yaw} = 0$), roll, or yaw. Lateral equations of motion are decoupled and ignored.
+- **Interference Effects**: Rotor wake impingement on the wing and tail is currently neglected or simplified.
+
+**Milestone 1 Assumptions:**
+- No dynamic stall, no unsteady aerodynamics, no blade flexibility.
+- The default linear Cl-alpha model has no physical post-stall behavior. You must use a tabulated airfoil (like the provided NACA profiles in the GUI app) for realistic high-alpha performance.
+- Prandtl-Glauert correction is frozen (not applied) above M=0.7 rather than extrapolated.
+
+---
+
+## What is REAL vs. PLACEHOLDER (Action Required)
+
+**Real:**
+- The BEMT physics (both axial and edgewise), rigid body transformations, trim optimization logic, atmospheric models, and geometric structural mapping.
+- The `tests/` directory verifying standard math and edge cases.
+
+**Placeholder — YOU must replace before submitting:**
+- The experimental CT/CQ data in `gui_app/src/data/knight_hefner_template.csv`. You must fill this with digitized experimental data for accurate Task 3 validation.
+- The specific tiltrotor design variables inside the M2 demonstration scripts (`scripts/m2/*`). They are currently populated with toy numbers to ensure the trim solver loops run smoothly. You must replace them with your Task 5 design choices.
+
+## Academic Integrity Note
+Per the handout: discussion across teams is fine, copying code/analysis is not, and generative-AI assistance must be disclosed (Section 8.3). This codebase was produced with AI assistance — say so in your report, and ensure every team member can explain the core concepts (BEMT loop, trim solving, conversion assumptions) as they are graded aspects of your defense.
