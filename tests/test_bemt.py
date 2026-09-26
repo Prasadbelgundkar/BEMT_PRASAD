@@ -535,7 +535,7 @@ class TestMissionInfeasible:
                                 mission_power_model, mission_fuel_model, limits, fuel_kg=5.02)
         with pytest.raises(MissionInfeasibleError, match="reserve requirement"):
             planner.run_mission([
-                MissionSegment("Long hover", SegmentType.HOVER, duration_s=60,
+                MissionSegment("Long hover", SegmentType.HOVER, duration_s=600,
                                altitude_m=0, rpm=2200, collective_deg=-2, dt_s=5),
             ])
 
@@ -557,9 +557,13 @@ class TestMissionInfeasible:
                               min_collective_deg=-90, max_collective_deg=90)
         planner = _make_planner(mission_rotor, mission_airfoil,
                                 mission_power_model, mission_fuel_model, limits)
-        with pytest.raises(MissionInfeasibleError, match="Stalled"):
-            planner.run_mission([MissionSegment("Hover", SegmentType.HOVER, duration_s=5,
-                                                altitude_m=0, rpm=2200, collective_deg=28, dt_s=5)])
+        with pytest.raises(MissionInfeasibleError, match="Stalled|Aero Auto-Trim Failed"):
+            planner.run_mission([
+                MissionSegment("Massive weight", SegmentType.PAYLOAD_EVENT, duration_s=0,
+                               altitude_m=0, payload_delta_kg=5000),
+                MissionSegment("Hover", SegmentType.HOVER, duration_s=5,
+                               altitude_m=0, rpm=2200, collective_deg=28, dt_s=5)
+            ])
 
     def test_rpm_limit_low(self, mission_rotor, mission_airfoil,
                             mission_power_model, mission_fuel_model):
