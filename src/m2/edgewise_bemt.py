@@ -62,7 +62,7 @@ def solve_glauert(CT: float, mu: float, lam_c: float) -> float:
         
     try:
         # Avoid starting at exactly 0.0 if mu is very small
-        lam_max = np.sqrt(CT / 2.0) + 1e-3
+        lam_max = np.sqrt(max(CT, 1e-6) / 2.0) + 0.5
         return float(brentq(residual, 1e-6, lam_max))
     except ValueError:
         # Fallback to relaxation iteration if brentq fails to bracket
@@ -192,7 +192,8 @@ def run_edgewise_bemt(
                     stalled_count += 1
                     
                 mach = U_mag / a_sound
-                Cl, Cd = prandtl_glauert_correct(Cl, Cd, mach)
+                if mach < 0.7:
+                    Cl, _ = prandtl_glauert_correct(Cl, Cd, mach)
                 
                 # Prandtl tip/hub loss is not directly applied to Cl in BEMT.
                 # In M1 it was applied to the momentum equation. 
@@ -209,19 +210,19 @@ def run_edgewise_bemt(
                     dL = -dL
                 
                 dFz = B * (dL * np.cos(phi) - dD * np.sin(phi))
-                dFy = B * (dL * np.sin(phi) + dD * np.cos(phi))
+                dF_inplane = B * (dL * np.sin(phi) + dD * np.cos(phi))
                 
                 # H (longitudinal drag) and Y (lateral force)
                 # Venkatesan 3.68, 3.69
-                # dFx1 = dFy * sin(psi)
-                # dFy1 = -dFy * cos(psi)
+                # dFx1 = dF_inplane * sin(psi)
+                # dFy1 = -dF_inplane * cos(psi)
                 # Assuming dFx1 and dFy1 map to Hub frame H and Y
-                dFx_hub = dFy * np.sin(psi)
-                dFy_hub = -dFy * np.cos(psi)
+                dFx_hub = dF_inplane * np.sin(psi)
+                dFy_hub = -dF_inplane * np.cos(psi)
                 
                 # Record
                 dT_mat[i, j] = dFz
-                dQ_mat[i, j] = dFy * r
+                dQ_mat[i, j] = dF_inplane * r
                 dH_mat[i, j] = dFx_hub
                 dY_mat[i, j] = dFy_hub
         

@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import root
-from typing import Callable
+from typing import Callable, Optional
 
 from rotor import Rotor
 from m2.aircraft_input_m2 import AircraftGeometryM2
@@ -111,7 +111,7 @@ def trim_aircraft(
     a_sound: float,
     x0: np.ndarray,
     trim_pitch_with: str = 'elevator'
-) -> np.ndarray:
+) -> Optional[np.ndarray]:
     
     # Cost function for scipy.optimize.root
     def cost(x):
@@ -122,6 +122,9 @@ def trim_aircraft(
         
     res = root(cost, x0, method='hybr')
     if not res.success:
-        print(f"Warning: Trim did not converge at V={V_inf}. Msg: {res.message}")
+        import numpy as np
+        print(f"[trim_solver] WARNING: Trim did not converge at V={V_inf:.1f} m/s. "
+              f"Residual norm: {np.linalg.norm(res.fun):.4f}. Msg: {res.message}")
+        return None
         
     return res.x

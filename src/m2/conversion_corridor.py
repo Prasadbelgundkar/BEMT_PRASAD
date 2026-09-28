@@ -50,7 +50,9 @@ def evaluate_trim_point(
             x0=x0,
             trim_pitch_with=trim_pitch_with
         )
-        
+        if x_trim is None:
+            return TrimPointResult(V_inf, nacelle_deg, False, 0, 0, 0, 0, False, 0.0, "Trim failed")
+            
         # Verify residuals
         res = compute_aircraft_residual(
             x_trim, V_inf, 0.0, nacelle_deg, omega_rad_s,

@@ -58,9 +58,16 @@ class Rotor:
 
     def solidity(self, n_stations: int = 200) -> float:
         """Rotor (thrust-weighted-ish) solidity: sigma = B * mean_chord / (pi * R)."""
-        x = np.linspace(self.root_cutout_m / self.radius_m, 1.0, n_stations)
+        x_root = self.root_cutout_m / self.radius_m
+        span_frac = 1.0 - x_root
+        if span_frac <= 0.0:
+            raise ValueError(
+                f"Degenerate rotor: root_cutout_m ({self.root_cutout_m}) "
+                f">= radius_m ({self.radius_m}). Cannot compute solidity."
+            )
+        x = np.linspace(x_root, 1.0, n_stations)
         chords = np.array([self.chord_fn(xi) for xi in x])
-        mean_chord = _trapz(chords, x) / (1.0 - self.root_cutout_m / self.radius_m)
+        mean_chord = _trapz(chords, x) / span_frac
         return self.num_blades * mean_chord / (np.pi * self.radius_m)
 
     def disk_area_m2(self) -> float:

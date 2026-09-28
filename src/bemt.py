@@ -128,7 +128,7 @@ def solve_element(r: float, R: float, B: int, chord: float, twist_total: float,
         dT_BET = B * (dL * np.cos(phi) - dD * np.sin(phi))
 
         # Differential-annulus momentum theory (per unit span), with tip loss.
-        dT_mom = 4.0 * np.pi * r * rho * F * abs(v_axial + v) * v
+        dT_mom = 4.0 * np.pi * r * rho * F * (v_axial + v) * v
 
         return dT_BET - dT_mom
 
@@ -143,11 +143,16 @@ def solve_element(r: float, R: float, B: int, chord: float, twist_total: float,
         return None
 
     v_lo_scan, v_hi_scan = v_scan_range
-    # Search outward from v=0 towards positive v first (typical thrusting rotor).
-    bracket = find_bracket(0.0, v_hi_scan, n_scan // 2)
-    if bracket is None:
-        # Fall back to negative-v branch (e.g. windmilling/negative thrust).
+    if v_axial < -1.0:
+        # Descending flight: physical induced velocity is negative; scan that direction first
         bracket = find_bracket(0.0, v_lo_scan, n_scan // 2)
+        if bracket is None:
+            bracket = find_bracket(0.0, v_hi_scan, n_scan // 2)
+    else:
+        # Hover / climb / propeller: positive induced velocity is expected
+        bracket = find_bracket(0.0, v_hi_scan, n_scan // 2)
+        if bracket is None:
+            bracket = find_bracket(0.0, v_lo_scan, n_scan // 2)
 
     if bracket is not None:
         try:
@@ -247,11 +252,7 @@ def run_bemt(rotor: Rotor, airfoil_provider: Callable[[float], object],
     )
 
 
-def advance_ratio(v_axial: float, omega_rad_s: float, R: float) -> float:
-    """Propeller-convention advance ratio J = V / (n D) = pi*V/(Omega*R)."""
-    n = omega_rad_s / (2 * np.pi)
-    D = 2 * R
-    return v_axial / (n * D) if n > 0 else 0.0
+
 
 
 def trim_hover_collective(

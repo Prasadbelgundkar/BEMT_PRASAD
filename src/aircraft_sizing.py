@@ -5,7 +5,7 @@ import os
 from parameters import (
     EMPTY_MASS_KG, PAYLOAD_MASS_KG, FUEL_MASS_KG,
     FLAT_PLATE_AREA_M2, NUM_ENGINES, ENGINE_POWER_W,
-    CRUISE_ALTITUDE_AMSL_M, RADIUS_M
+    CRUISE_ALTITUDE_AMSL_M
 )
 from environment import isa
 

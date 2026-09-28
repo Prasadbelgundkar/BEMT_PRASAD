@@ -25,7 +25,7 @@ import numpy as np
 
 from environment import isa
 from rotor import Rotor
-from bemt import run_bemt, advance_ratio
+from bemt import run_bemt
 
 
 class SegmentType(Enum):
@@ -119,6 +119,9 @@ class MissionPlanner:
                  power_model: PowerAvailableModel, fuel_model: FuelModel,
                  limits: DesignLimits, g: float = 9.80665,
                  flat_plate_area_m2: float = 1.7,
+                 wing_area_m2: float = 39.24,
+                 wing_AR: float = 9.0,
+                 wing_e_oswald: float = 0.8,
                  step_callback: Optional[Callable[[MissionState], None]] = None):
         self.rotor = rotor
         self.airfoil_provider = airfoil_provider
@@ -128,6 +131,9 @@ class MissionPlanner:
         self.fuel_model = fuel_model
         self.limits = limits
         self.flat_plate_area_m2 = flat_plate_area_m2
+        self.wing_area_m2 = wing_area_m2
+        self.wing_AR = wing_AR
+        self.wing_e_oswald = wing_e_oswald
         self.state = MissionState(gross_mass_kg=empty_mass_kg + fuel_mass_kg,
                                    fuel_mass_kg=fuel_mass_kg)
         self.empty_mass_kg = empty_mass_kg
@@ -186,11 +192,10 @@ class MissionPlanner:
             D_parasite = q * self.flat_plate_area_m2
             
             # Induced Drag (L = W, D_i = L^2 / (q * pi * AR * e))
-            # Hardcoding the wing parameters designed earlier (S=39.24, AR=9.0, e=0.8)
-            wing_area = 39.24
-            AR = 9.0
-            e = 0.8
-            L = self.state.gross_mass_kg * 9.81
+            wing_area = self.wing_area_m2
+            AR = self.wing_AR
+            e = self.wing_e_oswald
+            L = self.state.gross_mass_kg * self.g
             D_induced = (L**2) / (q * wing_area * np.pi * e * AR)
             
             drag_N = D_parasite + D_induced
@@ -313,7 +318,12 @@ class MissionPlanner:
             return None, None
 
     def _find_optimal_efficiency(self, target_thrust_per_rotor: float, atmo, v_axial: float, fallback_rpm: float):
-        """Scans allowed RPMs to find the most fuel-efficient (lowest power) state that trims the aircraft."""
+        """
+        [DEFERRED] RPM sweep optimizer. Currently not called by run_segment().
+        To enable: replace the _optimize_trim call in run_segment with this method.
+        Disabled because the scan (25 RPM steps) is too slow for real-time stepping
+        with 60-second time steps at cruise; an offline optimization pass is recommended.
+        """
         best_rpm = None
         best_coll = None
         best_perf = None

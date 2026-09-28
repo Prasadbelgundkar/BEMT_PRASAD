@@ -72,7 +72,7 @@ class TableAirfoil:
 
     def get_coeffs(self, alpha_rad: float) -> Tuple[float, float, bool]:
         lo, hi = self.alpha_rad_arr[0], self.alpha_rad_arr[-1]
-        stalled = alpha_rad <= lo or alpha_rad >= hi
+        stalled = alpha_rad < lo or alpha_rad > hi
         a_clip = min(max(alpha_rad, lo), hi)
         Cl = float(np.interp(a_clip, self.alpha_rad_arr, self.Cl_arr))
         Cd = float(np.interp(a_clip, self.alpha_rad_arr, self.Cd_arr))
@@ -107,7 +107,7 @@ def prandtl_glauert_correct(Cl: float, Cd: float, mach: float,
     """
     m = min(mach, mach_limit)
     beta = max((1.0 - m ** 2) ** 0.5, 1e-3)
-    return Cl / beta, Cd / beta
+    return Cl / beta, Cd
 
 
 class BlendedLinearAirfoilProvider:
