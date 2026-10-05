@@ -36,7 +36,7 @@ def test_R_shaft_to_body_airplane_mode():
     # Airplane mode (i_n = 0 deg)
     R = R_shaft_to_body(0)
     # Z_H (thrust) points forward (+X_b)
-    # X_H (aft) points down (+Z_b)
+    # X_H (aft) points UP (-Z_b): z_b = -x_H
     # Y_H (right) points right (+Y_b)
     expected = np.array([
         [ 0,  0,  1],

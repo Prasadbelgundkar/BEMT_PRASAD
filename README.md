@@ -1,48 +1,112 @@
 # Tiltrotor BEMT + Mission Planner — Milestone 1 & 2 Codebase
 
-Modular Python implementation of a BEMT rotor-performance tool, 3-DOF trim solver, and Mission Planner, designed to evaluate tiltrotor aircraft configurations across hover, conversion, and forward flight.
-
-This repository covers the complete architecture detailed in your assignments for **Milestone 1 (Hover & Axial Flow)** and **Milestone 2 (Forward Flight, Trim & Transition)**. 
-
----
-
-## What's New in Milestone 2
-- **Edgewise Forward Flight BEMT**: The rotor solver now discretizes the disk azimuthally and radially, applying Glauert's momentum equation for non-uniform inflow, handling reversed flow, and incorporating cyclic pitch.
-- **3-DOF Longitudinal Trim Solver**: Uses optimization (`scipy.optimize.root`) to balance total aircraft forces ($F_x$, $F_z$) and pitching moment ($M_y$) by solving for angle of attack ($\alpha$), collective pitch ($\theta_0$), and longitudinal control.
-- **Control Actuator Blending**: Automatically shifts longitudinal control authority from cyclic pitch (helicopter mode, nacelle > 45°) to elevator deflection (airplane mode, nacelle < 45°).
-- **Conversion Corridor Mapping**: Sweeps airspeed and nacelle angles to map the feasible trim envelope for transition.
-- **Interactive GUI**: A new interactive Streamlit application (`gui_app/app.py`) for rapid design parameter sweeping, airfoil comparison, and performance plotting.
+Modular Python implementation of a BEMT rotor-performance tool, a 6-DOF trim solver, a conversion-corridor
+mapper and a time-stepped Mission Planner, used to evaluate the team's tiltrotor across hover, conversion and
+airplane-mode flight.
 
 ---
 
 ## Install
 
 ```bash
-# Core computational requirements
-pip install numpy scipy matplotlib
-
-# To run the Milestone 2 Interactive GUI
-pip install -r gui_app/requirements_gui.txt
+pip install -r requirements.txt            # numpy, scipy, matplotlib, pytest (Python 3.10+; tested on 3.13)
+pip install -r gui_app/requirements_gui.txt   # optional: Streamlit GUI (Milestone 1)
 ```
 
 ---
 
-## Architecture & File Map
+## Milestone 2 — reproduce every graded figure and table
 
-### Milestone 2: Forward Flight & Trim (`src/m2/`)
-| File | Description |
+```bash
+python scripts/m2/run_all_m2.py                       # tests + both rotor variants
+python scripts/m2/run_all_m2.py --variants refined    # one variant only
+python scripts/m2/run_all_m2.py --recompute-corridor  # also re-solve the corridor map
+```
+
+Outputs go to `outputs/m2/rotor_<variant>/`. Each folder has a `FIGURES.md` index (figure → report section →
+caption with flight condition and assumptions) plus markdown/CSV tables. Runtime: ~10 min per variant with
+the cached corridor (`corridor_grid.npz`); the corridor itself takes ~12–15 min per variant on all CPU cores.
+
+### Rotor variant switch
+
+The aircraft is defined once in `src/m2/aircraft_input_m2.py` (it imports the Milestone 1 rotor, airfoil,
+masses and fuel model from `src/aircraft_input.py`). Two rotor variants are available through an environment
+variable:
+
+| `M2_ROTOR` | Blade twist | Helicopter-mode RPM | Notes |
+|---|---|---|---|
+| `M1` (default) | 25° root, −45°/R (Milestone 1 blade) | 500 | ~24 % of the hover disk stalled at MTOW / 2000 m |
+| `refined` | 12° root, −30°/R | 540 | stall-free hover, wider corridor, +11 % cruise power |
+
+```bash
+set M2_ROTOR=refined            # Windows cmd
+$env:M2_ROTOR="refined"         # PowerShell
+export M2_ROTOR=refined         # bash
+```
+
+### Individual scripts (`scripts/m2/`)
+
+| Script | Report section | Output |
+|---|---|---|
+| `verify_edgewise.py` | 3.1–3.4 | M1 recovery, sectional-load polar plots, U_T / reverse flow / Mach / stall map, grid sensitivity |
+| `demo_rotor_control_sweep.py` | 4.1–4.3, 4.6 | single-rotor collective / θ1c / θ1s sweeps (FX…MZ, power, stall margin), control derivatives |
+| `plot_aircraft_schematic.py` | 5.1 | dimensioned top/side views drawn from the config |
+| `make_design_tables.py` | 5.2–5.5 | change log, rotor / wing / empennage / mass / CG / limit tables, blade distributions |
+| `demo_trim_matrix.py` | 6.1, 6.2, 6.4 | 4 nacelle angles × 3 speeds, full 6-DOF trim table, trends, lift sharing |
+| `demo_failed_trim.py` | 6.3 | seven failed cases, each classified (numerical, control, stall, power, tip Mach, physical) |
+| `demo_corridor_map.py` | 7.1, 7.2 | 13 × 21 speed–nacelle map (6-DOF trim at every point), constraint fields |
+| `demo_transition_mission.py` | 8.1, 8.2 | outbound (hover → airplane) and inbound (airplane → hover) Mission Planner v2 runs |
+| `compare_m1_m2.py` | 9.1, 9.2 | M1 vs M2 power / stall / envelope comparison, rotor-variant trade table |
+
+Legacy demos from the first M2 draft (`demo_control_sweep.py`, `demo_azimuthal_loading.py`,
+`demo_transition_sweep.py`, `demo_full_mission.py`) still run and write to `outputs/m2/`, but they are superseded
+by the scripts above.
+
+### Milestone 2 modules (`src/m2/`)
+
+| File | Content |
 |---|---|
-| `edgewise_bemt.py` | Core rotor aerodynamic solver for edgewise forward flight |
-| `aero_models.py` | Aerodynamic models for fixed-wing components (wing & h-tail) |
-| `trim_solver.py` | 3-DOF longitudinal trim solver |
-| `conversion_corridor.py` | Maps feasible trim states across nacelle and velocity sweeps |
-| `frames.py` | Rigid body coordinate transformations |
-| `scripts/m2/` | Demonstration scripts (transition sweep, mission profile, trim matrix) |
-| `tests/m2/` | Pytest suite for the trim solver, frames, and recovery behaviors |
+| `aircraft_input_m2.py` | single source of truth: rotor variant, RPM schedule, installed power, wing / H-tail / V-tail, component locations, mass breakdown → CG(i_n, fuel), control limits, stick mixing, conversion paths, design-change log |
+| `frames.py` | inertial / body / shaft (hub) / blade frames, rotations, moment transfer to the CG |
+| `edgewise_bemt.py` | vectorized azimuth-resolved BEMT: cyclic pitch, annular-Glauert inflow with tip loss and the handout's K-factor, reverse flow, Prandtl–Glauert, stall and tip-Mach diagnostics, CW/CCW mirror |
+| `aero_models.py` | wing + flaperons, H-tail + elevator (downwash), V-tail + rudder, fuselage flat-plate drag (`airframe_loads`) |
+| `trim_6dof.py` | 6-DOF trim: unknowns θ, φ, θ0, δlon, δlat, δped; six residuals about the CG; bounded least squares; status + limit flags + `diagnose()` |
+| `conversion_corridor.py` | parallel corridor map built on `trim_6dof` (legacy 3-DOF functions kept) |
+| `mission_v2.py` | `MissionPlannerV2`: time-stepped segments with airspeed / climb / nacelle / RPM / wind schedules, online trim, fuel and mass update, continuity and limit checks (legacy function kept) |
+| `trim_solver.py` | original 3-DOF longitudinal trim (kept for regression tests) |
 
-*(See [Milestone_2_Architecture.md](Milestone_2_Architecture.md) for a detailed architecture diagram and methodology breakdown).*
+### Tests
 
-### Milestone 1: Hover & Axial Flow (`src/` and `scripts/`)
+```bash
+python -m pytest tests -q                 # M1 + M2 (M1 rotor)
+M2_ROTOR=refined python -m pytest tests/m2 -q
+```
+
+Key regression tests: `tests/m2/test_m1_recovery.py` (edgewise solver reproduces M1 hover / climb / airplane
+mode to < 1 % on the design rotor), `test_edgewise_vectorized.py` (vectorized = original loop, CW/CCW mirror
+symmetry), `test_trim_6dof.py` (convergence, lateral symmetry, saturation / power / wing-stall classification).
+
+---
+
+## Milestone 2 conventions and assumptions (summary)
+
+* **Frames:** body x fwd, y right, z down, origin at the CG; hub frame x aft, y advancing side, z thrust; blade
+  azimuth ψ from aft in the direction of rotation. Nacelle angle i_n = 90° helicopter, 0° airplane. Right rotor
+  counter-clockwise seen from above, left rotor clockwise (mirror image).
+* **Rotor:** rigid disk (no flapping), quasi-steady linear airfoil (a0 = 5.75/rad, stall flag 14°, Cl clipped
+  post-stall), Prandtl–Glauert on Cl only (frozen above M = 0.7), annular-Glauert + K-factor inflow, reverse-flow
+  sections with reversed incidence and in-plane force. No dynamic stall, unsteady wake or blade elasticity.
+* **Airframe:** freestream velocity and incidence at every surface; tail downwash from the wing only; fuselage +
+  nacelle drag as a flat plate at the CG; **no rotor-wake/wing interference and no hover download**.
+* **Controls:** pitch = θ1c + elevator, roll = differential collective + flaperons, yaw = differential θ1s +
+  rudder; rotor terms faded out with sin²(i_n).
+* **Limits:** rotor stalled loaded area ≤ 5 %, reverse-flow area ≤ 3 %, advancing-tip Mach ≤ 0.85, 5 % power
+  margin, wing α below stall, controls within bounds, nacelle rate ≤ 8°/s.
+
+---
+
+## Milestone 1: Hover & Axial Flow (`src/` and `scripts/`)
+
 | File | Assignment task(s) |
 |---|---|
 | `environment.py` | ISA model — Section 1.2 |
@@ -50,63 +114,21 @@ pip install -r gui_app/requirements_gui.txt
 | `rotor.py` | Blade geometry (chord/twist distributions, solidity, tip Mach) |
 | `bemt.py` | Core axial BEMT solver (iterative inflow, Prandtl tip loss) |
 | `validation.py` | Hover validation vs. Knight & Hefner — Task 3 |
+| `aircraft_input.py` | Milestone 1 aircraft definition (also the base of the M2 configuration) |
 
----
-
-## Quick Start
-
-### Milestone 2 Examples
 ```bash
-# 1. Run a conversion corridor sweep
-python scripts/m2/demo_corridor_map.py
-
-# 2. Sweep cyclic/elevator control effectiveness
-python scripts/m2/demo_control_sweep.py
-
-# 3. Simulate a full tiltrotor mission profile
-python scripts/m2/demo_full_mission.py
+python gui_app/src/validation.py        # validation vs Knight & Hefner (requires filled CSV data)
+python scripts/plot_axial_flight.py     # axial forward-flight performance
+cd gui_app && streamlit run app.py      # interactive GUI
 ```
 
-### Launch the Interactive GUI
-```bash
-cd gui_app
-streamlit run app.py
-```
-
-### Milestone 1 Examples
-```bash
-# 1. Validation vs Knight & Hefner (requires filled CSV data)
-python gui_app/src/validation.py
-
-# 2. Axial forward-flight performance
-python scripts/plot_axial_flight.py
-```
+Milestone 1 assumptions: no dynamic stall, no unsteady aerodynamics, no blade flexibility; the linear Cl–α model
+has no physical post-stall behaviour; Prandtl–Glauert frozen above M = 0.7.
 
 ---
-
-## Known Modeling Limitations
-
-**Milestone 2 Assumptions:**
-- **Rigid Blades**: Flapping dynamics are ignored ($\beta = 0$). Hub moments are computed purely from aerodynamic force asymmetries.
-- **Symmetric Flight**: Assumes purely longitudinal motion with no side-slip ($\beta_{yaw} = 0$), roll, or yaw. Lateral equations of motion are decoupled and ignored.
-- **Interference Effects**: Rotor wake impingement on the wing and tail is currently neglected or simplified.
-
-**Milestone 1 Assumptions:**
-- No dynamic stall, no unsteady aerodynamics, no blade flexibility.
-- The default linear Cl-alpha model has no physical post-stall behavior. You must use a tabulated airfoil (like the provided NACA profiles in the GUI app) for realistic high-alpha performance.
-- Prandtl-Glauert correction is frozen (not applied) above M=0.7 rather than extrapolated.
-
----
-
-## What is REAL vs. PLACEHOLDER (Action Required)
-
-**Real:**
-- The BEMT physics (both axial and edgewise), rigid body transformations, trim optimization logic, atmospheric models, and geometric structural mapping.
-- The `tests/` directory verifying standard math and edge cases.
-
-**Placeholder — YOU must replace before submitting:**
-- The experimental CT/CQ data in `gui_app/src/data/knight_hefner_template.csv`. You must fill this with digitized experimental data for accurate Task 3 validation.
-- The specific tiltrotor design variables inside the M2 demonstration scripts (`scripts/m2/*`). They are currently populated with toy numbers to ensure the trim solver loops run smoothly. You must replace them with your Task 5 design choices.
 
 ## Academic Integrity Note
-Per the handout: discussion across teams is fine, copying code/analysis is not, and generative-AI assistance must be disclosed (Section 8.3). This codebase was produced with AI assistance — say so in your report, and ensure every team member can explain the core concepts (BEMT loop, trim solving, conversion assumptions) as they are graded aspects of your defense.
+Per the handout: discussion across teams is fine, copying code/analysis is not, and generative-AI assistance must
+be disclosed (report Section 10.3). This codebase was produced with AI assistance — say so in the report, and make
+sure every team member can explain the BEMT loop, the trim formulation, the corridor constraints and the mission
+logic, as these are graded aspects of the defense.

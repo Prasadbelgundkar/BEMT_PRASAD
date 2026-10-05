@@ -1,81 +1,78 @@
-# Tiltrotor BEMT Milestone 2: Architecture & Code Flow
+# Tiltrotor Milestone 2 — Algorithms and Logic Flow (report Section 2)
 
-## 1. Overview
-Milestone 2 expands the foundational hover BEMT code into a comprehensive forward flight and transition analysis tool for tiltrotor aircraft. It introduces edgewise rotor aerodynamics, non-uniform inflow, reversed flow handling, full aircraft longitudinal trim, and conversion corridor mapping.
+All modules are in `src/m2/`; the aircraft is defined once in `aircraft_input_m2.py`, which builds on the
+Milestone 1 configuration (`src/aircraft_input.py`). The Milestone 1 solver (`src/bemt.py`) is unchanged and is
+reproduced exactly by the edgewise solver when the edgewise velocity and cyclic pitch are zero.
 
-## 2. Code Flow Structure
-The new capabilities are heavily compartmentalized within the `src/m2/` directory:
+---
 
-- `src/m2/edgewise_bemt.py`: The core rotor aerodynamic solver for forward flight. It discretizes the disk azimuthally and radially.
-- `src/m2/aero_models.py`: Aerodynamic models for the fixed-wing components (wing and horizontal tail).
-- `src/m2/trim_solver.py`: 3-DOF longitudinal trim solver using `scipy.optimize.root` to balance forces and moments.
-- `src/m2/conversion_corridor.py`: Explores the trim envelope over a grid of nacelle angles and airspeeds to map the feasible transition corridor.
-- `src/m2/mission_v2.py`: Mission analysis integrating trim solutions over time/distance profiles.
-- `src/m2/frames.py`: Rigid body coordinate transformations (shaft to body frame, computing moments about the CG).
-- `src/m2/aircraft_input_m2.py`: Expanded dataclasses representing the complete aircraft geometry (CG offsets, wing areas, etc.).
-
-## 3. Workflow Diagram
+## 2.1 Edgewise-flight performance estimator (`edgewise_bemt.run_edgewise_bemt`)
 
 ```mermaid
 flowchart TD
-    subgraph Inputs
-    A1[Aircraft Geometry & CG] --> Trim
-    A2[Rotor & Airfoil Data] --> BEMT
-    A3[Flight State: V_inf, Nacelle Angle, Altitude] --> Trim
-    end
-
-    subgraph Trim Solver [3-DOF Longitudinal Trim Optimizer]
-    TrimState[State Guess: Alpha, Collective, Pitch Control]
-    Residuals[Residual Evaluation: Fx, Fz, My]
-    TrimState --> Residuals
-    end
-
-    subgraph Aerodynamic Models
-    BEMT[Edgewise BEMT]
-    Wing[Wing Aerodynamics]
-    Tail[Tail Aerodynamics]
-    end
-
-    Inputs --> TrimState
-    
-    TrimState -->|V, Alpha, Omega, Nacelle, Collective, Cyclic| BEMT
-    TrimState -->|V, Alpha| Wing
-    TrimState -->|V, Alpha, Elevator| Tail
-    
-    BEMT -->|Forces & Moments| Residuals
-    Wing -->|Forces & Moments| Residuals
-    Tail -->|Forces & Moments| Residuals
-
-    Residuals -->|Check Convergence| TrimState
-    
-    Residuals -->|Converged (Res < Tol)| Output
-    
-    subgraph Outputs
-    Output[Trimmed State: Power, Pitch Attitude, Controls, Stall Margin]
-    end
+    IN["Inputs: rotor geometry (R, B, chord(r), twist(r), cut-out), airfoil(r),<br/>V, alpha_shaft, Omega, theta0, theta1c, theta1s, rho, a,<br/>nacelle angle i_n, hub position from CG, rotation CCW/CW"] --> GRID
+    GRID["Grid: n_r radial stations (cut-out..R) x n_psi azimuths<br/>(psi from aft, in the direction of rotation)"] --> KIN
+    KIN["Blade kinematics (rigid disk, beta = 0)<br/>theta(r,psi) = twist + theta0 + theta1c cos psi + theta1s sin psi<br/>U_T = Omega r + V cos(alpha_s) sin psi<br/>mu = V cos(alpha_s)/(Omega R), lambda_c = V sin(alpha_s)/(Omega R)"] --> CT0
+    CT0["Initial C_T guess"] --> GL
+    GL["Rotor-level Glauert momentum:<br/>lambda_iG = C_T / (2 sqrt(mu^2 + (lambda_c + lambda_iG)^2))<br/>K = (4/3 mu/lambda_G) / (1.2 + mu/lambda_G)"] --> ANN
+    ANN["Annular momentum with Prandtl tip loss, all stations at once:<br/>mean over psi of dT_BET(r) = 4 pi r rho F v0 sqrt(V_x^2 + (V_c + v0)^2)<br/>(bracket scan + bisection; identical to M1 when mu = 0)"] --> INFL
+    INFL["Nonuniform inflow: v_i(r,psi) = v0(r) [1 + K (r/R) cos psi]<br/>U_P = V sin(alpha_s) + v_i"] --> RF
+    RF{"U_T < 0 ?<br/>reverse flow"} -- yes --> RFX["alpha = -(theta + phi), in-plane force sign reversed"]
+    RF -- no --> NRM["alpha = theta - phi"]
+    RFX --> AERO
+    NRM --> AERO
+    AERO["Sectional aerodynamics: Cl, Cd (stall flag at 14 deg, Cl clipped)<br/>Prandtl-Glauert on Cl, frozen at M = 0.7<br/>dL, dD -> dT, dF_inplane (B blades)"] --> INT
+    INT["Rotor-cycle integration: trapezoid in r, mean over psi<br/>T, Q, H, Y, hub moments Mx, My (rigid hub)"] --> CONV
+    CONV{"|C_T,new - C_T| < tol ?"} -- no --> GL
+    CONV -- yes --> MIR
+    MIR["CW rotor: mirror Y, Mx, torque reaction"] --> TRF
+    TRF["Shaft -> body rotation (i_n), moment transfer to the CG:<br/>F_body = R_sb F, M_cg = R_sb M_hub + r_hub x F_body"] --> OUT
+    OUT["Outputs: 6 body loads, P, C_T, C_Q, sectional dT/dr(r,psi), U_T, alpha, Mach,<br/>reverse-flow area, stalled loaded area, stall margin, advancing-tip Mach"]
 ```
 
-## 4. Methodology
+---
 
-### Rotor Aerodynamics (Edgewise BEMT)
-- **Discretization**: The rotor disk is discretized both radially ($r$) and azimuthally ($\psi$).
-- **Inflow Modeling**: Applies Glauert's momentum equation for mean inflow, modified by a non-uniform inflow factor ($K$) to account for forward flight asymmetry.
-- **Blade Kinematics**: Accounts for cyclic pitch ($\theta_{1c}$, $\theta_{1s}$) and computes local blade velocity components ($U_T$, $U_P$) at every azimuth station.
-- **Reversed Flow**: Explicitly identifies and handles reversed flow regions on the retreating blade, reversing lift orientation appropriately.
-- **Integration**: Aerodynamic forces are computed at each element using lookup tables with Prandtl-Glauert compressibility corrections, then numerically integrated (using trapezoidal rules) to find total Thrust, H-force, Y-force, Torque, and Hub Moments.
+## 2.2 Trim solver (`trim_6dof.trim_6dof`)
 
-### Aircraft Trim
-- **Degrees of Freedom**: Solves a 3-DOF longitudinal trim problem (Sum of Forces X = 0, Sum of Forces Z = 0, Sum of Pitching Moments Y = 0).
-- **Optimization States**: Solves for angle of attack ($\alpha$), collective pitch ($\theta_0$), and longitudinal control.
-- **Control Blending**: Actuator logic shifts based on nacelle angle. At high nacelle angles (Helicopter mode, >45°), cyclic pitch is used for longitudinal trim. At low nacelle angles (Airplane mode, <45°), the elevator takes over.
+```mermaid
+flowchart TD
+    C["Trim condition: V, gamma, a_x, i_n, RPM, altitude (ISA), mass, fuel (CG), P_avail"] --> S
+    S["Seeds: user / previous solution (continuation) + 4 physics-based guesses"] --> LS
+    LS["Bounded least squares (scipy trust-region-reflective)<br/>unknowns x = [theta, phi, theta0, d_lon, d_lat, d_ped]<br/>bounds: attitude -20..25 deg, roll +/-30, collective -5..55, sticks +/-1"] --> MIX
+    MIX["Stick mixing (rotor terms x sin^2 i_n):<br/>pitch theta1c + elevator, roll diff. collective + flaperons,<br/>yaw diff. theta1s + rudder"] --> ROT
+    ROT["Right rotor (CCW) and left rotor (CW): edgewise BEMT<br/>alpha_shaft = 90 deg - i_n - alpha, alpha = theta - gamma"] --> SUM
+    AF["Airframe: wing (+ post-stall drag), H-tail with downwash,<br/>V-tail, fuselage flat plate"] --> SUM
+    SUM["Residual vector about the CG, body axes:<br/>[sum F + W + inertial (-m a_x)] / W,  [sum M] / (W x 1 m)"] --> CHK
+    CHK{"||r|| < 1e-4 ?"} -- "no, next seed" --> LS
+    CHK -- yes / seeds exhausted --> CLS
+    CLS["Status: ok / ok_at_limit / control_saturation / excessive_residual / no_physical_solution<br/>Flags: rotor stall > 5 %, reverse flow > 3 %, tip Mach > 0.85, wing stall, power margin < 5 %<br/>diagnose() -> human-readable cause"]
+```
 
-### Conversion Corridor Mapping
-- Sweeps a matrix of airspeeds and nacelle angles.
-- Feeds the previous successfully trimmed state as the initial guess for the next adjacent state, which greatly accelerates the optimizer's convergence through the highly non-linear transition regime.
+Convergence check: Euclidean norm of the normalized residual below 1e-4 (|F| ≲ 7 N, |M| ≲ 7 N·m at 7.2 t).
+A converged root with an unknown on its bound is flagged; a non-converged solution with an active bound is a
+control-authority failure; otherwise the residual level separates numerical stagnation from physical
+infeasibility.
 
-## 5. Key Assumptions
-1. **Rigid Blades**: Flapping dynamics are currently ignored ($\beta = 0$). Hub moments are computed purely from aerodynamic force asymmetries rather than blade root structural constraints or flapping hinge offsets.
-2. **Quasi-Steady Aerodynamics**: Unsteady aerodynamic effects (e.g., dynamic stall, wake lag) are not modeled. Airfoil coefficients are derived from static tables.
-3. **Interference Effects**: Rotor wake impingement on the wing and tail is currently neglected or heavily simplified. Wing lift reduction due to the nacelle and rotor blockage is approximated.
-4. **Glauert Inflow Validity**: Assumes a linear longitudinal variation of induced velocity across the rotor disk, which is a standard but simplified approximation for forward flight.
-5. **Symmetric Flight**: Assumes purely longitudinal motion with no side-slip ($\beta = 0$), no roll, and no yaw, allowing lateral equations of motion to be decoupled and ignored.
+---
+
+## 2.3 Mission Planner v2 (`mission_v2.MissionPlannerV2`)
+
+```mermaid
+flowchart TD
+    SEG["Segment list: type, duration, dt, schedules of tau = t/T:<br/>airspeed (trapezoidal accel.), climb rate, nacelle angle or path i_n(V),<br/>RPM, headwind"] --> CONT
+    CONT{"State continuity at segment start<br/>(V, i_n, RPM)"} -- violated --> ERR
+    CONT -- ok --> STEP
+    STEP["Time step k: evaluate schedules -> V, gamma = atan2(climb, V_h),<br/>a_x and nacelle rate from schedule derivatives"] --> ATM
+    ATM["ISA at current altitude; P_avail from engine lapse model;<br/>current mass and CG from the fuel state"] --> TRIM
+    TRIM["Online 6-DOF trim (warm start from previous step)"] --> LIM
+    LIM{"Feasible? trim status, rotor stall, reverse flow, tip Mach, wing stall,<br/>power margin, nacelle rate, RPM range, reserve fuel"} -- no --> ERR
+    LIM -- yes --> LOG
+    ERR["MissionInfeasibleError(segment, time, reason)<br/>(or logged and continued)"] --> LOG
+    LOG["Log: altitude, airspeed, ground speed, i_n, RPM, controls, attitude, power req/avail,<br/>fuel, stall margins, lift sharing"] --> UPD
+    UPD["Update: fuel -= sfc P dt; mass; altitude += climb dt; distance += (V_h - wind) dt"] --> NEXT
+    NEXT{"end of segment?"} -- no --> STEP
+    NEXT -- yes --> SEG
+```
+
+Trim data come from an online solution at every step (no lookup table); the conversion path used in the
+schedules is chosen from the Section 7 corridor map (`CONVERSION_PATH`, `RECONVERSION_PATH` in the config).

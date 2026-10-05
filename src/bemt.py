@@ -118,8 +118,7 @@ def solve_element(r: float, R: float, B: int, chord: float, twist_total: float,
 
         U_res = (U_T ** 2 + U_P ** 2) ** 0.5
         mach = U_res / a_sound
-        if mach < 0.7:
-            Cl, Cd = prandtl_glauert_correct(Cl, Cd, mach)
+        Cl, Cd = prandtl_glauert_correct(Cl, Cd, mach)  # factor frozen at M=0.7 inside
 
         F = prandtl_tip_loss(B, R, r, phi, root_cutout, include_root_loss)
 
@@ -128,7 +127,11 @@ def solve_element(r: float, R: float, B: int, chord: float, twist_total: float,
         dT_BET = B * (dL * np.cos(phi) - dD * np.sin(phi))
 
         # Differential-annulus momentum theory (per unit span), with tip loss.
-        dT_mom = 4.0 * np.pi * r * rho * F * (v_axial + v) * v
+        # Unified momentum form T = 2*rho*A*|V + v|*v. The |.| is required:
+        # it keeps thrust and induced velocity the same sign in the windmill-
+        # brake state (V + v < 0) and for locally negatively-loaded elements
+        # in hover (v < 0), where the signed product gives no real root.
+        dT_mom = 4.0 * np.pi * r * rho * F * abs(v_axial + v) * v
 
         return dT_BET - dT_mom
 
@@ -143,16 +146,13 @@ def solve_element(r: float, R: float, B: int, chord: float, twist_total: float,
         return None
 
     v_lo_scan, v_hi_scan = v_scan_range
-    if v_axial < -1.0:
-        # Descending flight: physical induced velocity is negative; scan that direction first
+    # With the |V + v| momentum form, thrust and induced velocity share a sign,
+    # so the physical root for a positively-loaded element is at v > 0 in
+    # climb, hover AND descent. Scan that side first; fall back to v < 0 for
+    # negatively-loaded elements.
+    bracket = find_bracket(0.0, v_hi_scan, n_scan // 2)
+    if bracket is None:
         bracket = find_bracket(0.0, v_lo_scan, n_scan // 2)
-        if bracket is None:
-            bracket = find_bracket(0.0, v_hi_scan, n_scan // 2)
-    else:
-        # Hover / climb / propeller: positive induced velocity is expected
-        bracket = find_bracket(0.0, v_hi_scan, n_scan // 2)
-        if bracket is None:
-            bracket = find_bracket(0.0, v_lo_scan, n_scan // 2)
 
     if bracket is not None:
         try:
@@ -172,8 +172,7 @@ def solve_element(r: float, R: float, B: int, chord: float, twist_total: float,
     Cl, Cd, stalled = airfoil.get_coeffs(alpha)
     U_res = (U_T ** 2 + U_P ** 2) ** 0.5
     mach = U_res / a_sound
-    if mach < 0.7:
-        Cl, Cd = prandtl_glauert_correct(Cl, Cd, mach)
+    Cl, Cd = prandtl_glauert_correct(Cl, Cd, mach)  # factor frozen at M=0.7 inside
     F = prandtl_tip_loss(B, R, r, phi, root_cutout, include_root_loss)
     dL = 0.5 * rho * U_res ** 2 * chord * Cl
     dD = 0.5 * rho * U_res ** 2 * chord * Cd

@@ -4,7 +4,8 @@ import numpy as np
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from rotor import Rotor, linear_taper_chord, linear_twist
+from rotor import Rotor
+import m2.aircraft_input_m2 as CFG
 from airfoil import BlendedLinearAirfoilProvider, LinearAirfoil
 from environment import isa
 from m2.aircraft_input_m2 import get_default_aircraft
@@ -12,18 +13,9 @@ from m2.trim_solver import compute_aircraft_residual, trim_aircraft
 
 def test_trim_hover():
     aircraft = get_default_aircraft()
-    rotor = Rotor(
-        radius_m=3.8,
-        root_cutout_m=0.5,
-        num_blades=3,
-        chord_fn=linear_taper_chord(0.90, 0.3888),
-        twist_fn=linear_twist(np.radians(25), np.radians(-45))
-    )
+    rotor = CFG.ROTOR
     
-    airfoil_provider = BlendedLinearAirfoilProvider(
-        stations=[0.0, 1.0],
-        airfoils=[LinearAirfoil(), LinearAirfoil()]
-    )
+    airfoil_provider = CFG.airfoil_provider
     
     # Realistic CG
     aircraft.cg_to_wing_ac_m[0] = 0.0

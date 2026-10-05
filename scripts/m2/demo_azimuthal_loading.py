@@ -6,32 +6,24 @@ import matplotlib.pyplot as plt
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from rotor import Rotor, linear_taper_chord, linear_twist
-from airfoil import BlendedLinearAirfoilProvider, LinearAirfoil
+import m2.aircraft_input_m2 as CFG
 from environment import isa
 from m2.edgewise_bemt import run_edgewise_bemt
 
 def main():
     # Setup V-22 like rotor
-    R = 3.8
-    rotor = Rotor(
-        radius_m=R,
-        root_cutout_m=0.5,
-        num_blades=3,
-        chord_fn=linear_taper_chord(0.90, 0.3888),
-        twist_fn=linear_twist(np.radians(25), np.radians(-45))
-    )
+    R = CFG.ROTOR.radius_m
+    rotor = CFG.ROTOR
     
-    airfoil_provider = BlendedLinearAirfoilProvider(
-        stations=[0.0, 1.0],
-        airfoils=[LinearAirfoil(), LinearAirfoil()]
-    )
+    airfoil_provider = CFG.airfoil_provider
     
     atmo = isa(0) # Sea level
     
-    # Forward flight case: V = 50 m/s (approx 100 kts) in airplane mode
+    # Edgewise (helicopter-mode) forward flight: V = 50 m/s, mu ~ 0.25.
+    # alpha_shaft = 5 deg means the disk is tilted 5 deg nose-down into the wind
+    # (flow passes DOWN through the disk); nacelle = 90 deg (helicopter mode).
     V_inf = 50.0
-    omega = 500 * (2 * np.pi / 60) # 500 RPM
+    omega = CFG.HOVER_OMEGA # 500 RPM
     
     print("Running Azimuth-Resolved BEMT...")
     result = run_edgewise_bemt(
@@ -39,11 +31,11 @@ def main():
         airfoil_provider=airfoil_provider,
         V_inf=V_inf,
         omega_rad_s=omega,
-        theta0_rad=np.radians(12),
-        theta1c_rad=np.radians(-2),  # Small cyclic to offset rolling moment
-        theta1s_rad=np.radians(3),   # Small cyclic to offset pitching moment
-        alpha_shaft_rad=np.radians(5), # 5 deg nose up
-        nacelle_angle_deg=0.0, # Airplane mode
+        theta0_rad=np.radians(20),
+        theta1c_rad=np.radians(-2),  # cos(psi) cyclic: fore/aft loading (pitch moment, rigid disk)
+        theta1s_rad=np.radians(-3),  # sin(psi) cyclic: unload advancing side (roll moment, rigid disk)
+        alpha_shaft_rad=np.radians(5), # disk 5 deg nose-down
+        nacelle_angle_deg=90.0, # Helicopter mode
         rho=atmo.density_kg_m3,
         a_sound=atmo.speed_of_sound_mps,
         n_r=40,
@@ -70,7 +62,7 @@ def main():
     ax.set_theta_direction(1)  # CCW from South
     
     contour = ax.contourf(np.radians(PSI_grid), R_grid, result.dT_dr_dpsi, levels=20, cmap='viridis')
-    plt.colorbar(contour, label='Sectional Thrust (N/m)')
+    plt.colorbar(contour, label='Sectional thrust dT/dr, all 3 blades (N/m)')
     
     ax.set_title(f'Azimuthal Loading (V={V_inf} m/s)\nAdvancing Side is Right (90 deg)')
     

@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 # Add src to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from rotor import Rotor, linear_taper_chord, linear_twist
-from airfoil import BlendedLinearAirfoilProvider, LinearAirfoil
+import m2.aircraft_input_m2 as CFG
 from environment import isa
 from m2.edgewise_bemt import run_edgewise_bemt
 
@@ -18,19 +17,10 @@ def main():
     CL_max = 1.4
     
     # Rotor Parameters (from M1)
-    R = 3.8
-    rotor = Rotor(
-        radius_m=R,
-        root_cutout_m=0.5,
-        num_blades=3,
-        chord_fn=linear_taper_chord(0.90, 0.3888),
-        twist_fn=linear_twist(np.radians(25), np.radians(-45))
-    )
+    R = CFG.ROTOR.radius_m
+    rotor = CFG.ROTOR
     
-    airfoil_provider = BlendedLinearAirfoilProvider(
-        stations=[0.0, 1.0],
-        airfoils=[LinearAirfoil(), LinearAirfoil()]
-    )
+    airfoil_provider = CFG.airfoil_provider
     
     atmo = isa(0) # Sea level
     rho = atmo.density_kg_m3
@@ -49,7 +39,7 @@ def main():
     i_n_schedule = 90.0 * (1.0 - (V_sweep / (V_stall * 1.1))**1.5)
     
     # Rotor RPM schedule (constant 500 RPM for transition)
-    omega = 500 * (2 * np.pi / 60)
+    omega = CFG.HOVER_OMEGA
     
     # Logs
     T_list = []

@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from rotor import Rotor, linear_taper_chord, linear_twist
-from airfoil import BlendedLinearAirfoilProvider, LinearAirfoil
+import m2.aircraft_input_m2 as CFG
 from environment import isa
 from m2.aircraft_input_m2 import get_default_aircraft
 from m2.mission_v2 import run_tiltrotor_mission
@@ -15,19 +14,10 @@ def main():
     aircraft = get_default_aircraft()
     
     # Standard metrics from previous reports
-    R = 3.8
-    rotor = Rotor(
-        radius_m=R,
-        root_cutout_m=0.5,
-        num_blades=3,
-        chord_fn=linear_taper_chord(0.90, 0.3888),
-        twist_fn=linear_twist(np.radians(25), np.radians(-45))
-    )
+    R = CFG.ROTOR.radius_m
+    rotor = CFG.ROTOR
     
-    airfoil_provider = BlendedLinearAirfoilProvider(
-        stations=[0.0, 1.0],
-        airfoils=[LinearAirfoil(), LinearAirfoil()]
-    )
+    airfoil_provider = CFG.airfoil_provider
     
     atmo = isa(2000) # Fly at 2000m altitude
     
@@ -35,15 +25,15 @@ def main():
     cruise_distance_m = 400 * 1000 # 400 km
     cruise_velocity_m_s = 90.0     # ~175 knots
     
-    hover_omega = 500 * (2 * np.pi / 60)
-    cruise_omega = 400 * (2 * np.pi / 60) # drop RPM in airplane mode to increase prop efficiency
+    hover_omega = CFG.HOVER_OMEGA
+    cruise_omega = CFG.AIRPLANE_OMEGA # drop RPM in airplane mode to increase prop efficiency
     
     print(f"--- M2 Full Mission Simulation ---")
     print(f"Aircraft Weight: {aircraft.W_MTOW_N/9.81:.1f} kg")
     print(f"Altitude: 2000 m")
     print(f"Distance: {cruise_distance_m/1000:.1f} km")
     print(f"Cruise Speed: {cruise_velocity_m_s:.1f} m/s")
-    print(f"Hover RPM: 500  |  Cruise RPM: 400")
+    print(f"Hover RPM: {CFG.HOVER_RPM:.0f}  |  Cruise RPM: {CFG.AIRPLANE_RPM:.0f}")
     print("-" * 34)
     
     segments = run_tiltrotor_mission(

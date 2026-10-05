@@ -5,26 +5,16 @@ import matplotlib.pyplot as plt
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-from rotor import Rotor, linear_taper_chord, linear_twist
-from airfoil import BlendedLinearAirfoilProvider, LinearAirfoil
+import m2.aircraft_input_m2 as CFG
 from environment import isa
 from m2.aircraft_input_m2 import get_default_aircraft
 from m2.trim_solver import compute_aircraft_residual
 
 def main():
     aircraft = get_default_aircraft()
-    rotor = Rotor(
-        radius_m=3.8,
-        root_cutout_m=0.5,
-        num_blades=3,
-        chord_fn=linear_taper_chord(0.90, 0.3888),
-        twist_fn=linear_twist(np.radians(25), np.radians(-45))
-    )
+    rotor = CFG.ROTOR
     
-    airfoil_provider = BlendedLinearAirfoilProvider(
-        stations=[0.0, 1.0],
-        airfoils=[LinearAirfoil(), LinearAirfoil()]
-    )
+    airfoil_provider = CFG.airfoil_provider
     
     atmo = isa(0)
     rho = atmo.density_kg_m3
@@ -34,7 +24,7 @@ def main():
     V_inf = 30.0          # 30 m/s airspeed
     nacelle_deg = 60.0    # 60 degrees tilt
     gamma_rad = 0.0       # level flight path
-    omega_rad_s = 500 * (2 * np.pi / 60)
+    omega_rad_s = CFG.HOVER_OMEGA
     
     # Baseline trim state guess (alpha=5 deg, collective=15 deg, elevator=0)
     alpha_body_rad = np.radians(5.0)

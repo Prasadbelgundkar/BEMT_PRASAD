@@ -52,7 +52,8 @@ def R_shaft_to_body(i_n_deg: float) -> np.ndarray:
     
     Tiltrotor Nacelle Angle (i_n):
     i_n = 90 deg (Helicopter mode): +Z_H points up (-Z_b), +X_H points aft (-X_b)
-    i_n = 0 deg (Airplane mode): +Z_H points forward (+X_b), +X_H points down (+Z_b)
+    i_n = 0 deg (Airplane mode): +Z_H points forward (+X_b), +X_H points UP (-Z_b)
+    (the shaft frame is pitched nose-down by 90 - i_n about Y; proper rotation, det = +1)
     """
     theta = np.radians(i_n_deg)
     c = np.cos(theta)
