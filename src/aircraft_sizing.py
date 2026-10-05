@@ -122,9 +122,9 @@ def run_sizing():
     
     plt.tight_layout()
     
-    os.makedirs('outputs', exist_ok=True)
-    plt.savefig('outputs/constraint_analysis.png', dpi=200, facecolor='white')
-    print("Graph generated and saved to outputs/constraint_analysis.png")
+    os.makedirs(os.path.join('outputs', 'm1'), exist_ok=True)
+    plt.savefig('outputs/m1/constraint_analysis.png', dpi=200, facecolor='white')
+    print("Graph generated and saved to outputs/m1/constraint_analysis.png")
     
 if __name__ == "__main__":
     run_sizing()

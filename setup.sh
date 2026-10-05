@@ -10,5 +10,6 @@ python3 -m pip install -r requirements.txt
 echo ""
 echo "==================================================="
 echo "Setup Complete! You can now run the solver."
-echo "Try running: python3 run_plots.py"
+echo "Run the tests:      python3 -m pytest"
+echo "Milestone 2 figures: python3 scripts/m2/run_all_m2.py"
 echo "==================================================="

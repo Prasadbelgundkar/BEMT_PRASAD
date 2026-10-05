@@ -1,9 +1,21 @@
-__pycache__/
-*.png
-*.jpg
-outputs/
-git ignore/
-**/__pycache__/
-.pytest_cache/
+# Python
 __pycache__/
 *.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Logs, crash dumps and local scratch work
+*.log
+crash.txt
+git ignore/
+IMPLEMENTATION_PLAN.md
+
+# Superseded result sets (kept locally only)
+outputs/**/_superseded*/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

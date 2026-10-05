@@ -66,7 +66,7 @@ def run_validation():
     ]
 
     # Setup the plot
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs(os.path.join("outputs", "m1"), exist_ok=True)
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
     axes = axes.flatten()
     
@@ -129,7 +129,7 @@ def run_validation():
     fig.suptitle("Knight & Hefner (1937) BEMT Validation: 2, 3, and 4 Blades", fontsize=16, fontweight='bold')
     fig.tight_layout()
     
-    plot_path = os.path.join("outputs", "knight_hefner_multi_blade_validation.png")
+    plot_path = os.path.join("outputs", "m1", "knight_hefner_multi_blade_validation.png")
     fig.savefig(plot_path, dpi=150)
     print(f"Validation complete! Plot successfully saved to {os.path.abspath(plot_path)}")
 

@@ -55,7 +55,7 @@ if __name__ == "__main__":
     ax[1, 1].grid(alpha=0.3)
     fig.suptitle("Hover performance vs. collective, sea level")
     fig.tight_layout()
-    fig.savefig("outputs/hover_performance_map.png", dpi=150)
+    fig.savefig("outputs/m1/hover_performance_map.png", dpi=150)
 
     # ---- Task 4.1: solidity variation study (via chord) -------------------
     chords = np.linspace(0.03, 0.09, 5)
@@ -68,6 +68,6 @@ if __name__ == "__main__":
     plt.xlabel("Collective [deg]"); plt.ylabel("Thrust [N]")
     plt.title("Effect of solidity on hover thrust")
     plt.legend(); plt.grid(alpha=0.3); plt.tight_layout()
-    plt.savefig("outputs/solidity_study.png", dpi=150)
+    plt.savefig("outputs/m1/solidity_study.png", dpi=150)
 
-    print("Saved hover_performance_map.png and solidity_study.png to outputs/")
+    print("Saved hover_performance_map.png and solidity_study.png to outputs/m1/")

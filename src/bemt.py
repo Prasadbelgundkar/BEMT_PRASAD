@@ -251,7 +251,11 @@ def run_bemt(rotor: Rotor, airfoil_provider: Callable[[float], object],
     )
 
 
-
+def advance_ratio(v_axial: float, omega_rad_s: float, R: float) -> float:
+    """Propeller-convention advance ratio J = V / (n D) = pi*V/(Omega*R)."""
+    n = omega_rad_s / (2 * np.pi)
+    D = 2 * R
+    return v_axial / (n * D) if n > 0 else 0.0
 
 
 def trim_hover_collective(

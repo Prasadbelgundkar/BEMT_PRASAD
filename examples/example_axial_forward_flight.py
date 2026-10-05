@@ -58,5 +58,5 @@ if __name__ == "__main__":
     fig.suptitle(f"Axial forward-flight (propeller-mode) sweep, "
                  f"h={atmo.altitude_m:.0f} m, Omega={OMEGA:.1f} rad/s")
     fig.tight_layout()
-    fig.savefig("outputs/axial_forward_flight_sweep.png", dpi=150)
-    print("Saved axial_forward_flight_sweep.png to outputs/")
+    fig.savefig("outputs/m1/axial_forward_flight_sweep.png", dpi=150)
+    print("Saved axial_forward_flight_sweep.png to outputs/m1/")

@@ -136,7 +136,7 @@ if __name__ == "__main__":
     
     # Save the final image to outputs
     plt.ioff()
-    os.makedirs('outputs', exist_ok=True)
-    out_path = os.path.join('outputs', 'mission_telemetry_high_res.png')
+    os.makedirs(os.path.join('outputs', 'm1'), exist_ok=True)
+    out_path = os.path.join('outputs', 'm1', 'mission_telemetry_high_res.png')
     plt.savefig(out_path, dpi=150)
     print(f"\nFinal plot saved as '{out_path}'")

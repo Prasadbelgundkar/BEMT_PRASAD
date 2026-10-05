@@ -42,7 +42,7 @@ def main():
         CP_list.append(perf.CP)
 
     # 3. Create the Plot
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs(os.path.join("outputs", "m1"), exist_ok=True)
     plt.figure(figsize=(10, 6))
 
     # Plot CT, CQ, CP on the same graph (multiplying CQ and CP by 10 so they are visible on the same scale as CT is common practice, but we'll plot them raw first)
@@ -57,7 +57,7 @@ def main():
     plt.legend()
     plt.tight_layout()
 
-    plot_path = "outputs/coefficient_plots.png"
+    plot_path = "outputs/m1/coefficient_plots.png"
     plt.savefig(plot_path, dpi=150)
     print(f"Plot successfully saved to: {os.path.abspath(plot_path)}")
 

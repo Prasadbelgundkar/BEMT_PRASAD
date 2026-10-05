@@ -20,7 +20,7 @@ import streamlit as st
 
 # ── path setup ──────────────────────────────────────────────────────────────
 _HERE = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(_HERE / "src"))
+sys.path.insert(0, str(_HERE.parent / "src"))   # shared solver in the repo-level src/
 
 from rotor import Rotor, linear_taper_chord, linear_twist, constant_chord, constant_twist
 from airfoil import LinearAirfoil, TableAirfoil
