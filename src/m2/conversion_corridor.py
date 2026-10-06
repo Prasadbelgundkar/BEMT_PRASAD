@@ -214,20 +214,30 @@ def build_corridor_map(V_grid, nacelle_grid, rpm, altitude_m, gross_mass_kg, n_j
     """Trim every (nacelle, V) point; returns dict of 2-D arrays [n_nacelle, n_V]."""
     import os
     import time
+    from concurrent.futures import as_completed
+    from concurrent.futures.process import BrokenProcessPool
     tasks = [(float(n), [float(v) for v in V_grid], rpm, altitude_m, gross_mass_kg) for n in nacelle_grid]
-    n_jobs = n_jobs or max(1, min(len(tasks), (os.cpu_count() or 2) - 1))
+    # Default: at most 4 worker processes (a typical laptop), never more than the CPU count - 1.
+    n_jobs = n_jobs or max(1, min(len(tasks), 4, (os.cpu_count() or 2) - 1))
     res = {}
     t0 = time.time()
-    if n_jobs == 1:
-        for t in tasks:
-            n, out = _row_task(t)
-            res[n] = out
-    else:
-        with ProcessPoolExecutor(max_workers=n_jobs) as ex:
-            for n, out in ex.map(_row_task, tasks):
-                res[n] = out
-                if verbose:
-                    print(f"    row i_n = {n:5.1f} done ({time.time() - t0:.0f} s)")
+
+    def done(n, out):
+        res[n] = out
+        if verbose:
+            print(f"    row i_n = {n:5.1f} done ({time.time() - t0:.0f} s)", flush=True)
+
+    if n_jobs > 1:
+        try:
+            with ProcessPoolExecutor(max_workers=n_jobs) as ex:
+                futures = [ex.submit(_row_task, t) for t in tasks]
+                for f in as_completed(futures):
+                    done(*f.result())
+        except BrokenProcessPool:
+            print("    a worker process stopped unexpectedly -- finishing the remaining rows serially", flush=True)
+    for t in tasks:                       # serial run, or rows lost with a broken pool
+        if t[0] not in res:
+            done(*_row_task(t))
     grid = {f: np.array([[p[f] for p in res[float(n)]] for n in nacelle_grid], float) for f in FIELDS}
     grid["V"] = np.asarray(V_grid, float)
     grid["nacelle"] = np.asarray(nacelle_grid, float)

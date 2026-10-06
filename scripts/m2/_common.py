@@ -12,7 +12,13 @@ import os
 import sys
 from dataclasses import dataclass
 
-import numpy as np
+# The rotor grids are small (25 x 36 to 40 x 72), so multi-threaded BLAS only adds
+# overhead; one BLAS thread per process also keeps the parallel corridor solve
+# from oversubscribing the CPU. Must be set before numpy is imported.
+for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ.setdefault(_var, "1")
+
+import numpy as np                                  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.abspath(os.path.join(HERE, '..', '..', 'src'))
