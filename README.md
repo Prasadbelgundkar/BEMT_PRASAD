@@ -4,6 +4,11 @@ Modular Python implementation of a BEMT rotor-performance tool, a 6-DOF trim sol
 mapper and a time-stepped Mission Planner, used to evaluate the team's tiltrotor across hover, conversion and
 airplane-mode flight.
 
+> **Bonus — 3D transition simulation.** The file to run is
+> **`bonus_simulation_transition_analysis/run_transition_simulation.py`**; it writes an interactive 3D animation
+> of the hover → airplane conversion to `bonus_simulation_transition_analysis/output/`. See
+> [Bonus — 3D transition simulation](#bonus--3d-transition-simulation) below.
+
 ---
 
 ## Repository layout
@@ -18,6 +23,9 @@ airplane-mode flight.
 │   ├── m1/                 Milestone 1 figure scripts (hover, axial flight, design study, mission v1)
 │   │   └── mission_tests/  Mission Planner v1 evaluation cases
 │   └── m2/                 Milestone 2 figure/table scripts (run_all_m2.py runs everything)
+├── bonus_simulation_transition_analysis/
+│   ├── run_transition_simulation.py   ← RUN THIS for the bonus 3D transition simulation
+│   └── output/             generated interactive HTML animations (open in a web browser)
 ├── outputs/
 │   ├── m1/                 Milestone 1 figures
 │   └── m2/rotor_<variant>/ Milestone 2 figures, tables and FIGURES.md index per rotor variant
@@ -39,7 +47,7 @@ All commands below are run from the repository root.
 ## Install
 
 ```bash
-pip install -r requirements.txt               # numpy, scipy, matplotlib, pytest (Python 3.10+; tested on 3.13)
+pip install -r requirements.txt               # numpy, scipy, matplotlib, pytest, plotly + pandas (bonus 3D simulation); Python 3.10+, tested on 3.13
 pip install -r gui_app/requirements_gui.txt   # optional: Streamlit GUI
 ```
 
@@ -145,6 +153,35 @@ Early-draft demos (`demo_control_sweep.py`, `demo_azimuthal_loading.py`, `demo_t
   margin, wing α below stall, controls within bounds, nacelle rate ≤ 8°/s.
 
 Full description: [`docs/milestone2/Milestone_2_Architecture.md`](docs/milestone2/Milestone_2_Architecture.md).
+
+---
+
+## Bonus — 3D transition simulation
+
+**File to run:** `bonus_simulation_transition_analysis/run_transition_simulation.py` (from the repository root,
+after `pip install -r requirements.txt`):
+
+```bash
+python bonus_simulation_transition_analysis/run_transition_simulation.py                 # outbound: hover -> airplane
+python bonus_simulation_transition_analysis/run_transition_simulation.py --leg inbound   # inbound: airplane -> hover
+```
+
+Runs in a few seconds and prints the path of the result:
+`bonus_simulation_transition_analysis/output/transition_3d_<leg>_rotor_<variant>.html`. **Open that file in a
+web browser** (Chrome, Edge, Firefox; works offline) and press **Play**. The HTML files (~10 MB each) are not
+committed, so run the command above to create them.
+
+| | What it shows |
+|---|---|
+| Left view | the aircraft to scale (fuselage, wing, H/V-tail, tilting nacelles, rotor disks), rotating about its CG with the trimmed pitch / roll; nacelles tilt 90° → 0° |
+| Right view | flight path, ground distance vs altitude (height exaggerated); flown part in blue, red marker = current position |
+| Data box | flight phase, time, airspeed, nacelle angle, pitch, altitude |
+| Controls | Play (~16× real time), Slow (~5×), Pause, time slider; mouse to rotate / pan / zoom |
+
+It does not solve anything itself: it replays the trimmed 6-DOF mission of Section 8
+(`outputs/m2/rotor_<variant>/m2_8_<leg>_log.csv`, written by `scripts/m2/demo_transition_mission.py`; the logs
+are committed, so no re-run is needed). Geometry is taken from `src/m2/aircraft_input_m2.py` and matches the
+Section 5.1 schematic. Plot axes: x forward, y left, z up. The rotor variant follows `M2_ROTOR` as above.
 
 ---
 

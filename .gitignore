@@ -14,6 +14,9 @@ IMPLEMENTATION_PLAN.md
 # Superseded result sets (kept locally only)
 outputs/**/_superseded*/
 
+# Bonus 3D simulation HTML (~10 MB each, regenerated in seconds by run_transition_simulation.py)
+bonus_simulation_transition_analysis/output/
+
 # Editor / OS
 .vscode/
 .idea/
