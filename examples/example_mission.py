@@ -1,10 +1,8 @@
 """
-Task 9 & 10 / Demonstration Cases demo: one feasible mission and one
-deliberately infeasible mission (e.g. insufficient fuel loaded), showing
-that MissionInfeasibleError correctly identifies the failure point.
-
-Replace the placeholder rotor / mass / power numbers with your team's
-actual Task 5 tiltrotor design before using this for your report.
+Example (Tasks 9 and 10): one feasible mission and one infeasible mission
+(insufficient fuel), showing that MissionInfeasibleError reports the
+segment, time and reason of the failure. Uses a simplified constant-chord
+rotor; the design aircraft is defined in src/aircraft_input.py.
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))

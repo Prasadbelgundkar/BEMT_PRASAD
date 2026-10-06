@@ -6,7 +6,7 @@ temperature offset (dISA), valid through the troposphere and lower
 stratosphere (0 - 20 km). This is the single source of truth for density,
 temperature, pressure, and speed of sound used everywhere else in the tool.
 
-Assumptions (document these in your report, Section 1.2):
+Assumptions (report Section 1.2):
     - Dry air, ideal gas law.
     - Standard ISA lapse rate of -6.5 K/km up to 11 km, isothermal 11-20 km.
     - A constant additive temperature offset (dISA, in K) is applied at all

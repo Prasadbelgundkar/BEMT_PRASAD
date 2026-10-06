@@ -1,8 +1,8 @@
 """
 parameters.py
 -------------
-Centralized configuration file for the BEMT Solver and Mission Planner.
-Change your design variables here, and all other scripts will read from this file.
+Configuration used by the Milestone 1 axial-flight and hover-map scripts
+(rotor geometry, operating point, engine model, mission plan).
 """
 
 import numpy as np
@@ -27,18 +27,15 @@ ROOT_CHORD_M = 0.90       # Chord length at the root (meters)
 TAPER_RATIO = 0.3888      # Tip chord / Root chord (0.35m / 0.90m)
 
 # Twist
-TWIST_ROOT_DEG = 25.0     # Massive built-in positive twist at the root
-TWIST_RATE_DEG = -45.0    # V-22 Osprey style extreme twist (-45 degrees to the tip!)
+TWIST_ROOT_DEG = 25.0     # Built-in pitch at the root (r/R = 0)
+TWIST_RATE_DEG = -45.0    # Linear washout per unit r/R (proprotor-type twist)
 
-# Airfoils
-# If using the blended CSV approach we just built, you would uncomment this:
+# Airfoils: spanwise-blended linear sections read from data/my_blended_airfoils.csv
 import os
-# Construct absolute path to the data folder based on where parameters.py is located
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 AIRFOIL_PROVIDER = BlendedLinearAirfoilProvider.from_csv(os.path.join(DATA_DIR, "my_blended_airfoils.csv"))
-
-# use a simple constant linear airfoil provider so it runs out-of-the-box:
-#AIRFOIL_PROVIDER = lambda x: LinearAirfoil()
+# Single linear section along the whole span:
+# AIRFOIL_PROVIDER = lambda x: LinearAirfoil()
 
 # ==========================================
 # 3. OPERATING CONDITIONS
@@ -89,15 +86,14 @@ RESERVE_FUEL_KG = 450.0         # Absolute minimum fuel allowed
 # ==========================================
 # 7. MISSION PROFILE (Flight Plan)
 # ==========================================
-# Define your mission altitudes here (AMSL = Above Mean Sea Level):
+# Mission altitudes (AMSL = above mean sea level):
 TAKEOFF_ALTITUDE_AMSL_M = 0.0
 CLIMB_ALTITUDE_AMSL_M = 3500.0
 CRUISE_ALTITUDE_AMSL_M = 7000.0
 DROP_ALTITUDE_AMSL_M = 1000.0
 LANDING_ALTITUDE_AMSL_M = 0.0
 
-# You can change the time-step (dt_s) here to speed up or slow down the simulation!
-# dt_s = Time between aerodynamic calculations (in seconds)
+# dt_s = time step between aerodynamic evaluations [s] (per segment)
 MISSION_PLAN = [
     # (Name, Type, Duration[s], Alt[m], RPM, Collective[deg], Vertical/Cruise Speed[m/s], dt_s)
     ("Takeoff hover", "HOVER", 60, TAKEOFF_ALTITUDE_AMSL_M, 550, 8.0, 0.0, 10),

@@ -5,7 +5,7 @@ import os
 from environment import isa
 from bemt import run_bemt
 
-# Import EVERYTHING from our new parameters control panel!
+# Rotor, airfoil and operating point from parameters.py
 from parameters import (
     get_configured_rotor, AIRFOIL_PROVIDER, 
     ALTITUDE_M, DISA_K, OMEGA_RPM, V_AXIAL_MPS

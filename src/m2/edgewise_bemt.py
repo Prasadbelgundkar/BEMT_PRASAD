@@ -22,7 +22,7 @@ Rigid disk: no flapping (beta = 0); hub moments are carried by the hub.
 Inflow model (report Section 1.2 / 2.1)
 ---------------------------------------
     lambda_i(r, psi) = lambda_i0(r) * [1 + K (r/R) cos(psi)]
-    K = (4/3 * mu/lambda_G) / (1.2 + mu/lambda_G)            (handout hint)
+    K = (4/3 * mu/lambda_G) / (1.2 + mu/lambda_G)            (Drees-type, assignment handout)
 
 lambda_G is the total (freestream + induced) inflow ratio from Glauert's
 rotor-level momentum equation. lambda_i0(r) is either
@@ -203,7 +203,7 @@ def solve_glauert(CT: float, mu: float, lam_c: float) -> float:
 
 
 def inflow_K(mu: float, lambda_G: float) -> float:
-    """Longitudinal inflow-gradient factor from the handout hint."""
+    """Longitudinal inflow-gradient factor K(mu/lambda) (Drees-type)."""
     if abs(lambda_G) > 1e-9:
         m = abs(mu / lambda_G)
         return (4.0 / 3.0) * m / (1.2 + m)

@@ -9,19 +9,16 @@ Two model types are supported:
    handout (Knight & Hefner validation rotor):
         Cl = a0 * alpha
         Cd = Cd_min + eps * alpha^2
-   with alpha in RADIANS. This model has no built-in stall behaviour, so a
-   separate `stall_alpha` cutoff is used purely for FLAGGING stalled
-   sections (Task 2) -- the linear Cl/Cd values are still returned so the
-   solver stays well-behaved, but `is_stalled` tells you where the model
-   is no longer physically trustworthy. Document this limitation in
-   Section 3.4 of your report.
+   with alpha in RADIANS. The linear model has no stall behaviour of its
+   own, so a separate `stall_alpha` cutoff flags stalled sections (Task 2).
+   Beyond it Cl is clipped and Cd is floored (see get_coeffs); the flag
+   marks where the linear model is no longer physically valid.
 
 2. TableAirfoil - a generic angle-of-attack lookup table (e.g. digitized
    XFOIL/experimental polar), linearly interpolated, with the last
-   angle-of-attack in the table treated as the stall boundary. Use this
-   for your own tiltrotor design airfoil(s) in Task 5 if you have polar
-   data (recommended over the linear model once alpha gets large, e.g. in
-   axial/propeller mode where blade AoA can vary a lot).
+   angle-of-attack in the table treated as the stall boundary. Preferred
+   over the linear model at large angles of attack (e.g. axial/propeller
+   mode, where the blade AoA varies strongly along the span).
 
 Both models share a common interface: get_coeffs(alpha_rad) -> (Cl, Cd, stalled)
 """
@@ -44,10 +41,9 @@ class LinearAirfoil:
         Cl = self.a0 * alpha_rad
         Cd = self.Cd_min + self.eps * alpha_rad ** 2
         if stalled:
-            # Post-stall behaviour is not defined by the linear model.
-            # Clip Cl to avoid the solver chasing a nonphysical value and
-            # inflate Cd modestly to represent separated flow. This is a
-            # simple engineering fix -- justify / replace it in your report.
+            # Post-stall behaviour is not defined by the linear model:
+            # clip Cl at Cl_max_clip (keeps the inflow root-finder bounded)
+            # and floor Cd at 0.05 to represent separated flow.
             Cl = np.sign(alpha_rad) * min(abs(Cl), self.Cl_max_clip)
             Cd = max(Cd, 0.05)
         return Cl, Cd, stalled

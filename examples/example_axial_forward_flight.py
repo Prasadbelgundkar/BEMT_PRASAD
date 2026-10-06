@@ -1,5 +1,5 @@
 """
-Task 7 demo: axial forward-flight (airplane mode / propeller-like) sweep
+Example (Task 7): axial forward-flight (airplane mode / propeller-like) sweep
 over advance ratio J at a few collective settings. Reports CT, CP,
 propulsive efficiency, and flags the feasible envelope (no stall, tip Mach
 within limit).
@@ -17,16 +17,13 @@ from rotor import Rotor, constant_chord, linear_twist
 from bemt import run_bemt, advance_ratio
 
 airfoil = LinearAirfoil()
-atmo = isa(3000.0, 0.0)   # example cruise altitude -- replace with your design point
-OMEGA = 2 * np.pi * 2200.0 / 60.0   # example propeller-mode RPM -- replace with yours
+atmo = isa(3000.0, 0.0)             # 3000 m ISA
+OMEGA = 2 * np.pi * 2200.0 / 60.0   # 2200 RPM
 
-# NOTE: this is a PLACEHOLDER rotor (radius/chord/twist/RPM chosen only so
-# the demo produces a physically sensible propeller-mode operating point).
-# Replace with your Task 5 tiltrotor design before using these results in
-# your report. Propeller-mode rotors typically need substantial built-in
-# washout (large root pitch, less at tip) to keep local AoA reasonable when
-# tangential speed varies a lot along the span relative to axial speed --
-# that's why linear_twist is used here instead of a flat/untwisted blade.
+# Small illustrative propeller (R = 0.762 m), not the design proprotor (the
+# design rotor in axial flight is analysed in scripts/m1/plot_axial_flight.py).
+# Strong washout keeps the local angle of attack moderate in propeller mode,
+# where the inflow angle varies strongly along the span.
 rotor = Rotor(radius_m=0.762, root_cutout_m=0.125, num_blades=3,
               chord_fn=constant_chord(0.06),
               twist_fn=linear_twist(np.radians(30.0), np.radians(-20.0)))

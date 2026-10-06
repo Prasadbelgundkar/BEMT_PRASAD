@@ -91,7 +91,7 @@ def plot_visuals():
     try:
         planner3.run_mission(segs3)
     except MissionInfeasibleError as e:
-        pass # Expected to fail!
+        pass  # infeasible by design: the log up to the failure is plotted
         
     t3 = [l['time_s']/60 for l in planner3.state.log]
     fuel3 = [l['fuel_mass_kg'] for l in planner3.state.log]

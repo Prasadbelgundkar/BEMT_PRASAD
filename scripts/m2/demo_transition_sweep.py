@@ -38,7 +38,7 @@ def main():
     # A typical tiltrotor uses a roughly linear or quadratic schedule vs speed.
     i_n_schedule = 90.0 * (1.0 - (V_sweep / (V_stall * 1.1))**1.5)
     
-    # Rotor RPM schedule (constant 500 RPM for transition)
+    # Rotor RPM schedule (constant conversion RPM for transition)
     omega = CFG.HOVER_OMEGA
     
     # Logs

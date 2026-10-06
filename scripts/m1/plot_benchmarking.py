@@ -9,7 +9,7 @@ Compares the TW-1500 proprotor against reference data for:
 
 Nondimensional metrics: CT/sigma vs CP/sigma, FM vs CT/sigma.
 
-Note: Reference values are approximate from open literature; cite properly.
+Reference values are approximate, read from Johnson (1994) and Leishman (2006).
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'src'))

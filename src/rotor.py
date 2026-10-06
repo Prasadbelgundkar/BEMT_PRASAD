@@ -3,12 +3,11 @@ rotor.py
 --------
 Rotor / blade geometry container. Nothing here is hard-coded to a single
 aircraft -- every field is a constructor argument so the same class serves
-the validation rotor, the design-variable study, and your final tiltrotor
-design.
+the validation rotor, the design-variable study, and the tiltrotor design.
 
 Radial distributions (chord, twist) are given as callables of nondimensional
-radial station r/R so you can swap in linear, ideal-twist, or arbitrary
-tabulated distributions without touching the solver.
+radial station r/R, so linear, ideal-twist or tabulated distributions can be
+used without changing the solver.
 """
 
 from dataclasses import dataclass, field

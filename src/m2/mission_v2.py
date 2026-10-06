@@ -108,10 +108,10 @@ def run_tiltrotor_mission(
     trans_time = 60.0
     print("Simulating Transition segment...")
     # (airspeed [m/s], nacelle angle [deg]) points flown during conversion.
-    # A straight line from (0, 90) to (V_cruise, 0) leaves the conversion
-    # corridor (e.g. 45 m/s at 45 deg has no trim for the default aircraft),
-    # so the schedule is an input; the default holds the nacelle high until the
-    # wing is carrying load. Check it against the corridor map for your design.
+    # A straight line from (0, 90) to (V_cruise, 0) crosses untrimmable
+    # low-speed / low-nacelle-angle cells of the conversion corridor, so the
+    # schedule is an input; the default holds the nacelles high until the
+    # wing carries load (see the Section 7 corridor map).
     if transition_schedule is None:
         transition_schedule = [(0.1, 90.0), (25.0, 75.0), (45.0, 60.0),
                                (60.0, 30.0), (max(cruise_velocity_m_s, 65.0), 0.0)]

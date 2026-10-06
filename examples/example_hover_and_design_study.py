@@ -1,7 +1,7 @@
 """
-Task 4 & 6 demo: hover performance sweep vs. collective, and a solidity
-design-variable study on the validation rotor. Extend this pattern for
-taper, twist, blade number, root cutout, and RPM sweeps (Section 4).
+Example (Tasks 4 and 6): hover performance sweep vs. collective and a
+solidity study on the Knight & Hefner validation rotor. The full design
+studies (taper, twist, blade number, root cut-out, RPM) are in scripts/m1/.
 """
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))

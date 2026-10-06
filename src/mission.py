@@ -50,9 +50,8 @@ class MissionInfeasibleError(Exception):
 
 @dataclass
 class PowerAvailableModel:
-    """Simple engine/motor power-available model, degrading with altitude
-    and temperature. Replace `sea_level_power_W` and `lapse` with your
-    team's adopted propulsion data (Section 1.3)."""
+    """Engine power-available model, degrading with altitude and temperature:
+    P_avail = eta_drivetrain * P0 * (rho/rho0)^exponent (Section 1.3)."""
     sea_level_power_W: float
     density_ratio_exponent: float = 1.0   # P_avail ~ P0 * (rho/rho0)^exponent
     drivetrain_efficiency: float = 0.95   # gearbox/transmission losses

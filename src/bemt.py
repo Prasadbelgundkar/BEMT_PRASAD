@@ -9,9 +9,9 @@ rotor axis with Omega*r tangential) and propeller/axial-forward-flight mode
 airplane-mode case). Because the inflow is axisymmetric in BOTH regimes for
 an axial-flow rotor, one element-solve function serves both; only the axial
 velocity term (climb/descent vs. forward flight true airspeed) changes,
-which is exactly how Task 1 asks for it to be parameterized.
+as required by Task 1.
 
-Per-element algorithm (matches the flow you described):
+Per-element algorithm:
     1. Guess induced velocity v.
     2. U_T = Omega*r,  U_P = V_axial + v
     3. phi = atan2(U_P, U_T);  alpha = twist(r) + collective - phi

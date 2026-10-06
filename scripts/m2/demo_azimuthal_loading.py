@@ -23,7 +23,7 @@ def main():
     # alpha_shaft = 5 deg means the disk is tilted 5 deg nose-down into the wind
     # (flow passes DOWN through the disk); nacelle = 90 deg (helicopter mode).
     V_inf = 50.0
-    omega = CFG.HOVER_OMEGA # 500 RPM
+    omega = CFG.HOVER_OMEGA  # helicopter-mode RPM
     
     print("Running Azimuth-Resolved BEMT...")
     result = run_edgewise_bemt(

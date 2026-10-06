@@ -152,8 +152,8 @@ def run_edgewise_bemt(
                 U_T = omega_rad_s * r + mu * omega_rad_s * R * np.sin(psi)
                 
                 # Non-uniform inflow factor K
-                # Handout hint: K uses mu / lambda_total, where lambda_total is
-                # the TOTAL Glauert inflow (freestream component + induced).
+                # K uses mu / lambda_total, where lambda_total is the total
+                # Glauert inflow (freestream component + induced).
                 lam_total = lam_c + lambda_G
                 if abs(lam_total) > 1e-9:
                     mu_over_lam = abs(mu / lam_total)
@@ -164,15 +164,9 @@ def run_edgewise_bemt(
                     K = 0.0
                     
                 lambda_i_local = lambda_G * (1.0 + K * (r / R) * np.cos(psi))
-                # U_P = lambda_i_local * omega_rad_s * R + mu * omega_rad_s * R * np.tan(alpha_shaft_rad) * np.cos(psi)
-                # Wait, Venkatesan 3.48 has mu * np.tan(alpha) * cos(psi) which is just V_inf * sin(alpha) * cos(psi) / (Omega R).
-                # Wait, U_P is perpendicular to the disk. Freestream contribution is V_inf * sin(alpha).
-                # But Venkatesan includes flapping! We assume beta = 0. So UP from freestream is just V_inf * sin(alpha).
-                # The term mu * R * omega * tan(alpha) * cos(psi) is actually mu * omega * R * beta * cos(psi) in 3.48!
-                # Wait, in 3.48: U_P = lambda * Omega * R + r * beta_dot + mu * Omega * R * beta * cos(psi)
-                # If rigid disk (beta=0), U_P = lambda * Omega * R.
-                # And lambda = (V_inf * sin(alpha)) / (Omega R) + lambda_i
-                # So U_P = V_inf * sin(alpha_shaft_rad) + lambda_i_local * omega_rad_s * R
+                # Venkatesan (3.48): U_P = lambda Omega R + r beta_dot + mu Omega R beta cos(psi).
+                # Rigid disk (beta = 0): U_P = lambda Omega R, with
+                # lambda = V sin(alpha_shaft) / (Omega R) + lambda_i.
                 U_P = V_inf * np.sin(alpha_shaft_rad) + lambda_i_local * omega_rad_s * R
                 
                 # Reverse flow handling (U_T < 0: air reaches the trailing edge first)
@@ -268,10 +262,7 @@ def run_edgewise_bemt(
     CY = Y_N / rho_A_vtip2
     CP = power_W / (rho_A_vtip2 * omega_rad_s * R)
     
-    # Hub moments (assume purely aerodynamic for rigid blade approximation)
-    # Pitch moment (My) comes from lateral differences in thrust
-    # Roll moment (Mx) comes from longitudinal differences in thrust
-    # Let's compute them by integrating thrust moments
+    # Hub moments (aerodynamic only, rigid blade), integrated from the thrust:
     # M = r x F with r = r*(cos psi, sin psi, 0), F = (0, 0, dT):
     # Mx = + T * r * sin(psi)
     # My = - T * r * cos(psi)
