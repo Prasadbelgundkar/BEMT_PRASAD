@@ -1,0 +1,29 @@
+# Section 5 -- engine sizing and selection
+
+Rotor 'refined', MTOW 7200 kg, 6-DOF trimmed power required (both rotors). Power available per engine = 0.95 x P_rated x sigma^1.0; cruise checks use max-continuous = 0.86 x take-off; required margin 5 %.
+
+## Power required at the sizing conditions
+
+| Condition | P required [kW] | Rating used |
+|---|---|---|
+| R1 hover OGE, 1500 m ISA+15 | 1909 | take-off, 2 engines |
+| R2 vertical climb 2.5 m/s, 2000 m | 2006 | take-off, 2 engines |
+| R3 airplane cruise 74.3 m/s, 7000 m, 250 RPM | 620 | max continuous, 2 engines |
+| R4a OEI, corridor minimum power (45 m/s, i_n = 45.0 deg), 2000 m | 576 | OEI, 1 engine |
+| R4b OEI, airplane cruise 85 m/s, 2000 m, 350 RPM (desirable) | 1171 | OEI, 1 engine |
+
+## Candidate engines
+
+| Engine | Take-off power [kW] | Dry mass [kg] | SFC [g/kWh] | R1 | R2 | R3 | R4a | R4b | V_max 2000 m, MCP [m/s] | V_max 7000 m, MCP [m/s] | V_dash 7000 m, take-off [m/s] | Meets R1-R4a | Note |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P&WC PT6C-67A | 1445 | 225 | 290 | +15 % | +11 % | +45 % | +49 % | -4 % | 102 | 98 | 104 | yes | AW609; mass, SFC est. |
+| GE T700-GE-701D | 1486 | 207 | 283 | +17 % | +14 % | +47 % | +50 % | -1 % | 103 | 100 | 104 | yes | UH-60M / AH-64E |
+| RR/Safran RTM322-01/1 | 1611 | 255 | 255 | +24 % | +20 % | +51 % | +54 % | +7 % | 105 | 102 | 108 | yes | NH90 / EH101 |
+| Safran Makila 2A | 1801 | 279 | 270 | +32 % | +29 % | +56 % | +59 % | +17 % | 110 | 106 | 114 | yes | H225; SFC est. |
+| GE CT7-8A | 1893 | 245 | 280 | +35 % | +32 % | +58 % | +61 % | +21 % | 112 | 109 | 116 | yes | S-92; mass, SFC est. |
+
+Margins are 1 - P_required / P_available (5 % required). Airplane-mode RPM: 350 up to 100 m/s, 420 above (dash).
+
+No candidate reaches the 125 m/s (450 km/h) target. The airplane-mode trim converges up to 135 m/s, so the top speed is limited by power: 125 m/s at 7000 m needs 1963 kW, i.e. a take-off rating of at least 2260 kW per engine.
+
+**Selected: GE CT7-8A** (1893 kW take-off, 245 kg, SFC 280 g/kWh): meets R1-R4a, OEI cruise (R4b) -- the lightest engine doing so.

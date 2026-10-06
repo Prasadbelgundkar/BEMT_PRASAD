@@ -1,7 +1,7 @@
 # Section 3 summary
 
 * Max M1-recovery error (annular Glauert): 0.0000 %
-* Representative condition: V=40 m/s, i_n=90 deg, h=2000 m ISA, 540 RPM, m=7200 kg
-* Trim controls: theta0=22.32, theta1c=4.01, theta1s=0.00 deg, alpha_body=-5.52 deg, alpha_shaft=5.52 deg
-* Rotor: T = 37700 N, H = 2566 N, Y = -1309 N, Q = 13114 N m, P = 741.6 kW, mu = 0.185, lambda_G = 0.0636, K = 0.944
-* Advancing-tip Mach 0.767, reverse-flow 1.28 % of grid, stall margin -6.5 deg
+* Representative condition: V=40 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg
+* Trim controls: theta0=21.86, theta1c=3.68, theta1s=0.00 deg, alpha_body=-5.41 deg, alpha_shaft=5.41 deg
+* Rotor: T = 37593 N, H = 2525 N, Y = -1198 N, Q = 12747 N m, P = 734.2 kW, mu = 0.182, lambda_G = 0.0620, K = 0.946
+* Advancing-tip Mach 0.779, reverse-flow 1.22 % of grid, stall margin -5.9 deg

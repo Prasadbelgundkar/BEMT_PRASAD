@@ -2,5 +2,5 @@
 
 | Condition | mu | adv. tip Mach | max local Mach | reverse-flow area [% grid] | reverse circle diameter [R] | stalled loaded fwd cells [%] | stall margin [deg] |
 |---|---|---|---|---|---|---|---|
-| V=40 m/s, i_n=90 deg, h=2000 m ISA, 500 RPM, m=7200 kg | 0.200 | 0.719 | 0.719 | 1.67 | 0.200 | 21.6 | -18.7 |
-| V=60 m/s, i_n=75 deg, h=2000 m ISA, 500 RPM, m=7200 kg | 0.290 | 0.774 | 0.772 | 4.51 | 0.290 | 8.8 | -11.0 |
+| V=40 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg | 0.182 | 0.779 | 0.778 | 1.22 | 0.182 | 14.4 | -15.1 |
+| V=70 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg | 0.313 | 0.867 | 0.876 | 5.38 | 0.313 | 39.0 | -26.5 |

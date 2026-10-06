@@ -2,10 +2,11 @@
 aircraft_input_m2.py  --  MILESTONE 2 AIRCRAFT CONFIGURATION (single source of truth)
 =====================================================================================
 Every module in src/m2 and every script in scripts/m2 takes the aircraft from
-HERE. The rotor, airfoil, fuel model and masses are imported unchanged from the
-Milestone 1 file `aircraft_input.py`; this file only ADDS what edgewise flight
-and trim need (wing, empennage, component locations, mass items / CG, control
-limits) and records the Milestone 2 design changes (report Section 5.2).
+HERE. Rotor planform, airfoil, RPM, collective range, masses and the power-lapse
+model come from the Milestone 1 file `aircraft_input.py`; this file adds what
+edgewise flight and trim need (wing, empennage, component locations, mass items
+/ CG, control limits), the selected engine, and records the Milestone 2 design
+changes (report Section 5.2).
 
 Body axes (report Section 1.1): origin at the REFERENCE POINT = wing root
 quarter-chord, +x forward, +y right, +z down. Component positions below are
@@ -13,7 +14,8 @@ given from this reference point; positions "from the CG" are derived.
 
 Nacelle angle i_n: 90 deg = helicopter mode (shaft vertical), 0 deg = airplane
 mode (shaft pointing forward). The proprotor and its gearbox tilt about the
-conversion-actuator pivot at the wing tip; engines are fixed (AW609 layout).
+conversion-actuator pivot at the wing tip; the engines tilt with the nacelles
+(Milestone 1 layout).
 """
 from dataclasses import dataclass, field
 from typing import List, Optional
@@ -25,7 +27,7 @@ import numpy as np
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import aircraft_input as M1                      # noqa: E402  (Milestone 1 master file)
-from mission import PowerAvailableModel          # noqa: E402
+from mission import PowerAvailableModel, FuelModel  # noqa: E402
 
 G = M1.G
 
@@ -35,15 +37,12 @@ G = M1.G
 from rotor import Rotor, linear_twist                     # noqa: E402
 
 # Rotor variant (report Sections 5.2 / 5.3 / 9.2). Select with the environment
-# variable M2_ROTOR = 'M1' (default) or 'refined', e.g.
-#     set M2_ROTOR=refined   (Windows cmd)  /  $env:M2_ROTOR="refined" (PowerShell)
-#   'M1'      : Milestone 1 blade, twist 25 deg at the root, -45 deg/R, 500 RPM
-#               in helicopter mode. At MTOW / 2000 m it has ~24 % of the loaded
-#               disk stalled in hover (inboard sections at 19-30 deg AoA).
-#   'refined' : same planform, twist 12 deg at the root, -30 deg/R, and 540 RPM
-#               in helicopter/conversion mode (CT/sigma 0.13 -> 0.11). Hover
-#               stall-free (+1.5 deg margin), conversion stall-free; cost: about
-#               +11 % airplane-mode power at 85 m/s (lower propulsive efficiency).
+# variable M2_ROTOR = 'refined' (default, the Milestone 2 design) or 'M1', e.g.
+#     set M2_ROTOR=M1   (Windows cmd)  /  $env:M2_ROTOR="M1" (PowerShell)
+#   'M1'      : Milestone 1 blade, twist 25 deg at the root, -45 deg/R.
+#   'refined' : same planform, twist 12 deg at the root, -30 deg/R (less inboard
+#               pitch: removes the inboard hover stall of the M1 blade at MTOW).
+# Both variants use the Milestone 1 helicopter-mode RPM (550).
 ROTOR_M1 = M1.ROTOR
 ROTOR_REFINED = Rotor(
     radius_m=M1.ROTOR_RADIUS_M, root_cutout_m=M1.ROOT_CUTOUT_M, num_blades=M1.NUM_BLADES,
@@ -51,8 +50,7 @@ ROTOR_REFINED = Rotor(
     name="TW-7200 Proprotor (M2 refined twist)",
 )
 ROTOR_VARIANTS = {"M1": ROTOR_M1, "refined": ROTOR_REFINED}
-_HOVER_RPM_VARIANT = {"M1": M1.HOVER_RPM, "refined": 540.0}
-ROTOR_VARIANT = os.environ.get("M2_ROTOR", "M1")
+ROTOR_VARIANT = os.environ.get("M2_ROTOR", "refined")
 if ROTOR_VARIANT not in ROTOR_VARIANTS:
     raise ValueError(f"M2_ROTOR must be one of {list(ROTOR_VARIANTS)}, got {ROTOR_VARIANT!r}")
 ROTOR = ROTOR_VARIANTS[ROTOR_VARIANT]
@@ -60,15 +58,21 @@ TWIST_DESC = {"M1": "25 deg root, -45 deg/R", "refined": "12 deg root, -30 deg/R
 airfoil_provider = M1.airfoil_provider
 AIRFOIL = M1.AIRFOIL
 AIRFOIL_NAME = M1.AIRFOIL_NAME
-FUEL_MODEL = M1.FUEL_MODEL
 NUM_ROTORS = M1.NUM_ROTORS
 
 # ============================================================
-# SECTION 2 -- RPM SCHEDULE  (M2 change: airplane-mode RPM 700 -> 420)
+# SECTION 2 -- RPM SCHEDULE
 # ============================================================
-HOVER_RPM = _HOVER_RPM_VARIANT[ROTOR_VARIANT]   # helicopter mode and conversion
+# Airplane-mode RPM is scheduled with advance ratio (6-DOF trim RPM study,
+# report Section 5.3): the lowest RPM that trims with collective margin.
+#   250 RPM  Milestone 1 long-range cruise (74.3 m/s, 7000 m): least power
+#   350 RPM  airplane-mode cruise up to 100 m/s (250 RPM saturates collective above ~85 m/s)
+#   420 RPM  high-speed dash above 100 m/s (450 km/h target)
+HOVER_RPM = M1.HOVER_RPM            # helicopter mode and conversion (550, Milestone 1)
 CONVERSION_RPM = HOVER_RPM
-AIRPLANE_RPM = 420.0                # 84 % -- keeps helical tip Mach < 0.85 at cruise
+LONG_RANGE_RPM = M1.CRUISE_RPM      # 250
+AIRPLANE_RPM = 350.0
+DASH_RPM = 420.0
 
 
 def rpm_to_omega(rpm: float) -> float:
@@ -80,22 +84,31 @@ CONVERSION_OMEGA = rpm_to_omega(CONVERSION_RPM)
 AIRPLANE_OMEGA = rpm_to_omega(AIRPLANE_RPM)
 
 # ============================================================
-# SECTION 3 -- POWER AVAILABLE  (M2 change: 2 x 200 kW -> 2 x 1450 kW)
+# SECTION 3 -- ENGINES AND POWER AVAILABLE
 # ============================================================
-# AW609 class: 2 x PT6C-67A, ~1447 kW each (MTOW ~8 t, rotor R ~3.95 m).
-POWER_PER_ENGINE_SL_W = 1450e3
+# Selected by the engine-sizing study (scripts/m2/engine_selection.py, report
+# Section 5.2): 2 x GE CT7-8A turboshaft, take-off rating 1893 kW each, one per
+# nacelle, cross-shafted through the interconnect drive (one engine can drive
+# both rotors). Dry mass ~245 kg and SFC ~280 g/kWh are estimates from the
+# CT7 / T700 engine family (not published for the -8A).
+ENGINE_NAME = "GE CT7-8A"
+POWER_PER_ENGINE_SL_W = 1893e3
+ENGINE_DRY_MASS_KG = 245.0
+ENGINE_SFC_KG_PER_J = 280.0 / 3.6e9          # 280 g/kWh
+MCP_FRACTION = 0.86                          # max continuous / take-off rating
 POWER_MODEL = PowerAvailableModel(           # PER ROTOR (one engine per nacelle)
     sea_level_power_W=POWER_PER_ENGINE_SL_W,
     density_ratio_exponent=M1.DENSITY_RATIO_EXPONENT,
     drivetrain_efficiency=M1.DRIVETRAIN_EFFICIENCY,
 )
+FUEL_MODEL = FuelModel(sfc_kg_per_J=ENGINE_SFC_KG_PER_J)
 
 # ============================================================
 # SECTION 4 -- REFERENCE CONDITIONS
 # ============================================================
 GROSS_MASS_KG = M1.GROSS_MASS_KG
 REFERENCE_ALTITUDE_M = 2000.0        # conversion corridor / trim matrix altitude
-AIRPLANE_CRUISE_SPEED_MPS = 85.0     # M2 change: 40 m/s is below wing stall speed
+AIRPLANE_CRUISE_SPEED_MPS = 85.0     # transition-mission cruise at 2000 m (M1 design cruise: 74.3 m/s at 7000 m)
 
 # Operational conversion path in the airspeed-nacelle plane (report Sections
 # 7.1 / 8.1), chosen through the middle of the feasible corridor of the
@@ -210,7 +223,7 @@ class MassItem:
 
 @dataclass
 class ControlLimits:
-    collective_deg: tuple = (-5.0, 55.0)     # on top of built-in twist (M1: -5..25)
+    collective_deg: tuple = (M1.MIN_COLLECTIVE_DEG, M1.MAX_COLLECTIVE_DEG)   # -10..65, on top of twist
     theta_1c_deg: tuple = (-10.0, 10.0)      # longitudinal cyclic (rigid disk: pitch moment)
     theta_1s_deg: tuple = (-10.0, 10.0)      # lateral cyclic
     elevator_deg: tuple = (-25.0, 25.0)
@@ -345,19 +358,25 @@ class AircraftGeometryM2:
 
 
 # ============================================================
-# SECTION 6 -- MASS BREAKDOWN  (empty 4500 + payload 1200 + fuel 1500 = 7200 kg)
+# SECTION 6 -- MASS BREAKDOWN  (empty 4530 + payload 1200 + fuel 1470 = 7200 kg)
 # ============================================================
 # Empty-mass split follows typical tiltrotor group-weight fractions
 # (wing ~12 %, fuselage ~20 %, rotors ~12 %, propulsion ~13 %, drive ~11 %).
 # x/z are from the reference point (wing root quarter chord), +fwd / +down.
-# Tilting items are listed for BOTH nacelles together.
+# Tilting items are listed for BOTH nacelles together. The engines sit in the
+# tilting nacelles (Milestone 1 layout); 2 x CT7-8A = 490 kg (+30 kg on the
+# previous 460 kg allowance), taken from the fuel to keep MTOW = 7200 kg.
+ENGINE_PAIR_MASS_KG = 2 * ENGINE_DRY_MASS_KG
+FUEL_CAPACITY_KG = M1.FUEL_MASS_KG - (ENGINE_PAIR_MASS_KG - 460.0)
+
+
 def default_mass_items() -> List[MassItem]:
     return [
         MassItem("Wing structure",                520.0, -0.35,  0.00),
         MassItem("Fuselage structure",            900.0, -0.60,  1.10),
         MassItem("Empennage (H + V tail)",        160.0, -6.40, -0.60),
         MassItem("Landing gear",                  240.0, -0.40,  2.00),
-        MassItem("Engines (2, fixed at tips)",    460.0, -0.60, -0.20),
+        MassItem("Engines (2 x CT7-8A, tilting)", ENGINE_PAIR_MASS_KG, 0.0, 0.0, True, -0.3),
         MassItem("Nacelle structure (fixed)",     120.0, -0.40, -0.20),
         MassItem("Proprotor gearboxes (tilting)", 240.0,  0.0,   0.0, True, 0.6),
         MassItem("Proprotors, blades + hubs",     520.0,  0.0,   0.0, True, 1.6),
@@ -366,7 +385,7 @@ def default_mass_items() -> List[MassItem]:
         MassItem("Avionics, electrical, systems", 400.0,  2.50,  1.00),
         MassItem("Crew + furnishings",            520.0,  2.00,  1.00),
         MassItem("Payload (10 pax)",      M1.PAYLOAD_KG,    -0.50,  1.20, category='payload'),
-        MassItem("Fuel (wing tanks)",     M1.FUEL_MASS_KG,  -0.30,  0.10, category='fuel'),
+        MassItem("Fuel (wing tanks)",     FUEL_CAPACITY_KG, -0.30,  0.10, category='fuel'),
     ]
 
 
@@ -374,22 +393,26 @@ def default_mass_items() -> List[MassItem]:
 # SECTION 7 -- DESIGN CHANGES FROM MILESTONE 1 (report Section 5.2)
 # ============================================================
 DESIGN_CHANGES = [
-    ("Installed power 2 x 200 kW -> 2 x 1450 kW",
-     "M1 power could not hover the 7.2 t aircraft (ideal hover power alone ~1.3 MW); AW609-class engines"),
-    ("Airplane-mode RPM 700 -> 420 (84 %)",
-     "Helical tip Mach ~0.86 at 85 m/s / 700 RPM exceeded the 0.85 limit"),
-    ("Airplane-mode cruise speed 40 -> 85 m/s",
-     "40 m/s is below the airplane-mode wing stall speed (~46 m/s at MTOW)"),
-    ("Collective range -5..25 deg -> -5..55 deg",
-     "Airplane mode at 85 m/s and 420 RPM needs ~46 deg collective on top of the -45 deg twist"),
-    ("Explicit mass breakdown, tilting proprotor mass, CG(i_n)",
+    ("Engines: 1.88 MW-class turboshaft (assumed) -> 2 x GE CT7-8A, 1893 kW take-off (selected)",
+     "Engine-sizing study with the 6-DOF trimmed aircraft: hover OGE 1500 m ISA+15 margin +35 %, OEI at the "
+     "corridor minimum-power point +61 %, OEI 85 m/s cruise +21 % (lightest candidate meeting OEI cruise); "
+     "see m2_5_engine_selection.md"),
+    ("Airplane-mode RPM: 250 -> scheduled 250 / 350 / 420 RPM",
+     "250 RPM kept for the 74.3 m/s / 7000 m cruise (least power) but the collective reaches its 65 deg limit "
+     "between 80 and 85 m/s; 350 RPM up to 100 m/s, 420 RPM for the high-speed dash"),
+    ("Blade twist 25 deg root, -45 deg/R -> 12 deg root, -30 deg/R ('refined')",
+     "M1 blade stalls inboard in hover at MTOW / 2000 m (12 % of loaded disk, stall margin -2.5 deg); refined "
+     "blade: 0 %, +2.0 deg, hover power -4 %; see m2_9_comparison.md"),
+    ("Explicit mass breakdown, tilting nacelle mass (engines, gearboxes, rotors), CG(i_n)",
      "Trim needs component locations; the CG moves forward as the nacelles tilt down"),
-    ("Wing, horizontal and vertical tail defined with locations",
-     "Required for transition trim (M1 used a flat-plate drag area only)"),
-    ("Rotor variant 'refined': twist 25/-45 -> 12/-30 deg/R, helicopter-mode RPM 500 -> 540",
-     "M1 blade stalls on ~24 % of the hover disk at MTOW/2000 m; refined: stall-free hover, +11 % cruise power"),
-    ("Rotor inflow: uniform Glauert -> annular Glauert + tip loss + K-factor",
-     "Uniform inflow mis-predicted the M1 hover/axial limit by 23-47 % on the -45 deg twisted blade"),
+    ("Wing, horizontal and vertical tail with locations and control surfaces",
+     "Required for transition trim (M1 used a flat-plate drag area and wing induced drag only)"),
+    ("Fuel capacity 1500 -> 1470 kg",
+     "Selected engines are 30 kg heavier than the empty-mass allowance; MTOW kept at 7200 kg"),
+    ("Rotor model: axisymmetric BEMT -> azimuth-resolved BEMT with cyclic, annular Glauert + tip loss + K-factor",
+     "Edgewise and conversion flight; reduces exactly to the M1 solver at mu = 0"),
+    ("Stall model stated as implemented: linear Cl with stall flag and Cl clip",
+     "The M1 report described a Viterna-Corrigan post-stall model; the code (M1 and M2) uses the linear model"),
 ]
 
 

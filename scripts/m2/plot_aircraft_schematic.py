@@ -132,7 +132,7 @@ def side(ax, ac):
     ax.set_xlim(-9.5, 9.5); ax.set_ylim(-4.6, 5.0)
     ax.set_xlabel("x from reference point [m] (+ forward)"); ax.set_ylabel("height [m] (+ up)")
     ax.legend(loc='lower right', fontsize=7, ncol=2)
-    ax.set_title("Side view (nacelle tilt about the pivot; rotor + gearbox tilt, engines fixed)", fontsize=9.5)
+    ax.set_title("Side view (nacelle tilt about the pivot; rotor, gearbox and engine tilt together)", fontsize=9.5)
 
 
 def main():

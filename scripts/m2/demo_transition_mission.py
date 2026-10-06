@@ -214,7 +214,7 @@ def definition_table():
             f"Rotor '{CFG.ROTOR_VARIANT}' ({CFG.TWIST_DESC}). ISA (dISA = 0). Wind: calm at the pad (hover/vertical "
             f"segments), along-track headwind building to {HEADWIND:.0f} m/s aloft during conversion. Speed changes "
             f"use trapezoidal acceleration profiles (15 % ramps). "
-            f"Outbound start: {H0:.0f} m, MTOW {CFG.GROSS_MASS_KG:.0f} kg (fuel {CFG.M1.FUEL_MASS_KG:.0f} kg). "
+            f"Outbound start: {H0:.0f} m, MTOW {CFG.GROSS_MASS_KG:.0f} kg (fuel {CFG.FUEL_CAPACITY_KG:.0f} kg). "
             f"Inbound start (arbitrary point): {INBOUND_START_H:.0f} m, fuel {INBOUND_FUEL_KG:.0f} kg. "
             f"Reserve fuel {CFG.M1.RESERVE_FUEL_KG:.0f} kg. Controls from the online 6-DOF trim at every step. "
             f"Conversion path (V [m/s], i_n [deg]): {PATH}; reconversion path: {RPATH}.", "",
@@ -234,7 +234,7 @@ def definition_table():
 
 def main():
     definition_table()
-    out_log, out_v = fly("outbound", outbound(), H0, CFG.M1.FUEL_MASS_KG)
+    out_log, out_v = fly("outbound", outbound(), H0, CFG.FUEL_CAPACITY_KG)
     in_log, in_v = fly("inbound", inbound(), INBOUND_START_H, INBOUND_FUEL_KG)
     plot_history(out_log, out_v, "m2_8p2_outbound_time_history",
                  "Section 8.2 -- Outbound: take-off, hover-to-airplane-mode conversion, cruise")

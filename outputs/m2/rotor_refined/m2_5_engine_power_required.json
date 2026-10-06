@@ -1,0 +1,325 @@
+{
+ "hover_1500_isa15": {
+  "P_kW": 1909.4278692981802,
+  "status": "ok",
+  "flags": [],
+  "collective_deg": 25.006169048323343
+ },
+ "hover_2000": {
+  "P_kW": 1903.0914654884448,
+  "status": "ok",
+  "flags": [],
+  "collective_deg": 24.916546306955727
+ },
+ "climb_2000": {
+  "P_kW": 2006.399570846701,
+  "status": "ok",
+  "flags": [],
+  "collective_deg": 25.469610579750995
+ },
+ "airplane_2000": [
+  {
+   "V": 55.0,
+   "rpm": 350.0,
+   "P_kW": 538.7149539643945,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 42.73357129875904
+  },
+  {
+   "V": 60.0,
+   "rpm": 350.0,
+   "P_kW": 605.2808707591732,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 45.044903414167536
+  },
+  {
+   "V": 65.0,
+   "rpm": 350.0,
+   "P_kW": 687.0358864291792,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 47.24674522638718
+  },
+  {
+   "V": 70.0,
+   "rpm": 350.0,
+   "P_kW": 784.0540803571121,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 49.33942466828174
+  },
+  {
+   "V": 75.0,
+   "rpm": 350.0,
+   "P_kW": 896.6427645007664,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 51.32596895380622
+  },
+  {
+   "V": 80.0,
+   "rpm": 350.0,
+   "P_kW": 1025.3523321023245,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 53.2084569640616
+  },
+  {
+   "V": 85.0,
+   "rpm": 350.0,
+   "P_kW": 1170.8715538923861,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 54.99118863362469
+  },
+  {
+   "V": 90.0,
+   "rpm": 350.0,
+   "P_kW": 1334.0319321531167,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 56.679283925608445
+  },
+  {
+   "V": 95.0,
+   "rpm": 350.0,
+   "P_kW": 1515.7963911650115,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 58.27820628021257
+  },
+  {
+   "V": 100.0,
+   "rpm": 350.0,
+   "P_kW": 1717.1088244860387,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 59.794339422551154
+  },
+  {
+   "V": 105.0,
+   "rpm": 420.0,
+   "P_kW": 2055.2634491359763,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 55.576767311602126
+  },
+  {
+   "V": 110.0,
+   "rpm": 420.0,
+   "P_kW": 2305.9751591865606,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 56.953154664389196
+  },
+  {
+   "V": 115.0,
+   "rpm": 420.0,
+   "P_kW": 2578.708506444998,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 58.26760108432963
+  },
+  {
+   "V": 120.0,
+   "rpm": 420.0,
+   "P_kW": 2874.5905703530298,
+   "status": "ok",
+   "flags": [
+    "power"
+   ],
+   "collective_deg": 59.52314619719641
+  },
+  {
+   "V": 125.0,
+   "rpm": 420.0,
+   "P_kW": 3194.7236377815366,
+   "status": "ok",
+   "flags": [
+    "power"
+   ],
+   "collective_deg": 60.72267082756262
+  },
+  {
+   "V": 130.0,
+   "rpm": 420.0,
+   "P_kW": 3540.2474680767205,
+   "status": "ok",
+   "flags": [
+    "power"
+   ],
+   "collective_deg": 61.868954012301
+  },
+  {
+   "V": 135.0,
+   "rpm": 420.0,
+   "P_kW": 3912.32665195893,
+   "status": "ok",
+   "flags": [
+    "power"
+   ],
+   "collective_deg": 62.96464933009445
+  }
+ ],
+ "airplane_7000": [
+  {
+   "V": 74.3,
+   "rpm": 250.0,
+   "P_kW": 620.2107797302834,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 62.6390453990646
+  },
+  {
+   "V": 55.0,
+   "rpm": 350.0,
+   "P_kW": null,
+   "status": "no_physical_solution",
+   "flags": [],
+   "collective_deg": null
+  },
+  {
+   "V": 60.0,
+   "rpm": 350.0,
+   "P_kW": null,
+   "status": "no_physical_solution",
+   "flags": [],
+   "collective_deg": null
+  },
+  {
+   "V": 65.0,
+   "rpm": 350.0,
+   "P_kW": null,
+   "status": "no_physical_solution",
+   "flags": [],
+   "collective_deg": null
+  },
+  {
+   "V": 70.0,
+   "rpm": 350.0,
+   "P_kW": 626.9377432898362,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 49.95273650472452
+  },
+  {
+   "V": 75.0,
+   "rpm": 350.0,
+   "P_kW": 680.3982145715914,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 51.85525165769048
+  },
+  {
+   "V": 80.0,
+   "rpm": 350.0,
+   "P_kW": 745.0436400281575,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 53.66729222026645
+  },
+  {
+   "V": 85.0,
+   "rpm": 350.0,
+   "P_kW": 820.9720607900399,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 55.389911395923704
+  },
+  {
+   "V": 90.0,
+   "rpm": 350.0,
+   "P_kW": 908.4482936440189,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 57.02525880762571
+  },
+  {
+   "V": 95.0,
+   "rpm": 350.0,
+   "P_kW": 1007.8341484745949,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 58.57735885282108
+  },
+  {
+   "V": 100.0,
+   "rpm": 350.0,
+   "P_kW": 1119.564644091828,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 60.05083332026643
+  },
+  {
+   "V": 105.0,
+   "rpm": 420.0,
+   "P_kW": 1313.1567069756409,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 55.71654636294356
+  },
+  {
+   "V": 110.0,
+   "rpm": 420.0,
+   "P_kW": 1455.0142221007836,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 57.06867270829673
+  },
+  {
+   "V": 115.0,
+   "rpm": 420.0,
+   "P_kW": 1610.319276838002,
+   "status": "ok",
+   "flags": [],
+   "collective_deg": 58.36008677540241
+  },
+  {
+   "V": 120.0,
+   "rpm": 420.0,
+   "P_kW": 1779.635584313834,
+   "status": "ok",
+   "flags": [
+    "power"
+   ],
+   "collective_deg": 59.59374733742323
+  },
+  {
+   "V": 125.0,
+   "rpm": 420.0,
+   "P_kW": 1963.4851424473516,
+   "status": "ok",
+   "flags": [
+    "power"
+   ],
+   "collective_deg": 60.77276415799521
+  },
+  {
+   "V": 130.0,
+   "rpm": 420.0,
+   "P_kW": 2162.4835961305503,
+   "status": "ok",
+   "flags": [
+    "power"
+   ],
+   "collective_deg": 61.89962357134443
+  },
+  {
+   "V": 135.0,
+   "rpm": 420.0,
+   "P_kW": 2377.271407436722,
+   "status": "ok",
+   "flags": [
+    "power"
+   ],
+   "collective_deg": 62.9767198568809
+  }
+ ],
+ "corridor_min_2000": {
+  "P_kW": 575.9187636181211,
+  "V": 45.0,
+  "nacelle": 45.0
+ }
+}

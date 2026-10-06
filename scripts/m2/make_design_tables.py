@@ -16,12 +16,23 @@ from _common import CFG, plt, save_figure, write_text
 M1 = CFG.M1
 
 
+def _f(x):
+    """2-decimal string without a negative zero."""
+    return f"{round(float(x), 2) + 0.0:.2f}"
+
+
+def _xyz(v):
+    return "(" + ", ".join(_f(c) for c in v) + ")"
+
+
 def rotor_table():
     rows = ["## 5.3 Rotor design", "",
             "| Parameter | Milestone 1 | M2 'M1' variant | M2 'refined' variant |", "|---|---|---|---|"]
     r1, rr = CFG.ROTOR_M1, CFG.ROTOR_REFINED
     sig = lambda r: r.solidity()
     tw = lambda r, x: np.degrees(r.twist_fn(x))
+    _sched = (f"{CFG.LONG_RANGE_RPM:.0f} (long-range cruise) / {CFG.AIRPLANE_RPM:.0f} (to 100 m/s) / "
+              f"{CFG.DASH_RPM:.0f} (dash)")
     entries = [
         ("Airfoil", M1.AIRFOIL_NAME, M1.AIRFOIL_NAME, M1.AIRFOIL_NAME),
         ("Stall angle (flag) [deg]", f"{np.degrees(M1.AIRFOIL.stall_alpha_rad):.0f}", "same", "same"),
@@ -33,13 +44,13 @@ def rotor_table():
         ("Solidity sigma", f"{sig(r1):.4f}", f"{sig(r1):.4f}", f"{sig(rr):.4f}"),
         ("Twist: root (r/R=0) / rate", "25 deg / -45 deg/R", "25 deg / -45 deg/R", "12 deg / -30 deg/R"),
         ("Built-in pitch at 0.75R [deg]", f"{tw(r1, 0.75):.2f}", f"{tw(r1, 0.75):.2f}", f"{tw(rr, 0.75):.2f}"),
-        ("RPM helicopter / conversion", f"{M1.HOVER_RPM:.0f}", f"{M1.HOVER_RPM:.0f}", "540"),
-        ("RPM airplane mode", f"{M1.CRUISE_RPM:.0f}", f"{CFG.AIRPLANE_RPM:.0f}", f"{CFG.AIRPLANE_RPM:.0f}"),
+        ("RPM helicopter / conversion", f"{M1.HOVER_RPM:.0f}", f"{CFG.HOVER_RPM:.0f}", f"{CFG.HOVER_RPM:.0f}"),
+        ("RPM airplane mode (schedule)", f"{M1.CRUISE_RPM:.0f}", _sched, _sched),
         ("Hover tip speed / Mach (2000 m)", f"{CFG.rpm_to_omega(M1.HOVER_RPM) * M1.ROTOR_RADIUS_M:.0f} m/s",
          f"{CFG.rpm_to_omega(M1.HOVER_RPM) * M1.ROTOR_RADIUS_M:.0f} m/s / "
          f"{CFG.rpm_to_omega(M1.HOVER_RPM) * M1.ROTOR_RADIUS_M / CFG.atmosphere().speed_of_sound_mps:.3f}",
-         f"{CFG.rpm_to_omega(540) * M1.ROTOR_RADIUS_M:.0f} m/s / "
-         f"{CFG.rpm_to_omega(540) * M1.ROTOR_RADIUS_M / CFG.atmosphere().speed_of_sound_mps:.3f}"),
+         f"{CFG.rpm_to_omega(CFG.HOVER_RPM) * M1.ROTOR_RADIUS_M:.0f} m/s / "
+         f"{CFG.rpm_to_omega(CFG.HOVER_RPM) * M1.ROTOR_RADIUS_M / CFG.atmosphere().speed_of_sound_mps:.3f}"),
         ("Collective range [deg]", f"{M1.MIN_COLLECTIVE_DEG:.0f} .. {M1.MAX_COLLECTIVE_DEG:.0f}",
          "{:.0f} .. {:.0f}".format(*CFG.ControlLimits().collective_deg), "same"),
         ("Cyclic range theta1c / theta1s [deg]", "- (axial only)",
@@ -89,15 +100,15 @@ def wing_table(ac):
             f"+/-{w.aileron_limit_deg:.0f} deg, Cl_da={w.Cl_delta_a:.3f}/rad | elevator {100*t.elevator_chord_frac:.0f} % "
             f"chord, tau_e={t.tau_e}, +/-{t.elevator_limit_deg:.0f} deg | rudder {100*v.rudder_chord_frac:.0f} % chord, "
             f"tau_r={v.tau_r}, +/-{v.rudder_limit_deg:.0f} deg |",
-            f"| a.c. from reference point [m] (x fwd, z down) | {tuple(np.round(ac.wing_ac_ref_m, 2))} | "
-            f"{tuple(np.round(ac.htail_ac_ref_m, 2))} | {tuple(np.round(ac.vtail_ac_ref_m, 2))} |",
-            f"| a.c. from CG (helicopter mode) [m] | {tuple(np.round(ac.wing_ac_from_cg(90), 2))} | "
-            f"{tuple(np.round(ac.htail_ac_from_cg(90), 2))} | {tuple(np.round(ac.vtail_ac_from_cg(90), 2))} |",
+            f"| a.c. from reference point [m] (x fwd, z down) | {_xyz(ac.wing_ac_ref_m)} | "
+            f"{_xyz(ac.htail_ac_ref_m)} | {_xyz(ac.vtail_ac_ref_m)} |",
+            f"| a.c. from CG (helicopter mode) [m] | {_xyz(ac.wing_ac_from_cg(90))} | "
+            f"{_xyz(ac.htail_ac_from_cg(90))} | {_xyz(ac.vtail_ac_from_cg(90))} |",
             f"| Tail volume coefficient | - | V_H = {t.S_m2 * (cg[0] - ac.htail_ac_ref_m[0]) / (w.S_m2 * w.chord_m):.3f} | "
             f"V_V = {v.S_m2 * (cg[0] - ac.vtail_ac_ref_m[0]) / (w.S_m2 * w.span_m):.3f} |",
             "", f"Fuselage + nacelle drag: flat-plate area {ac.flat_plate_area_m2} m^2 acting at the CG. "
                 "Rotor-wake/wing and rotor-wake/tail interference and hover download are NOT modelled.",
-            f"Nacelle pivots at {tuple(np.round(ac.nacelle_pivot_ref_m, 2))} m (and mirror), mast (pivot -> hub) "
+            f"Nacelle pivots at {_xyz(ac.nacelle_pivot_ref_m)} m (and mirror), mast (pivot -> hub) "
             f"{ac.mast_length_m} m."]
     return rows
 
@@ -109,14 +120,15 @@ def mass_table(ac):
         if it.tilts_with_nacelle:
             p90 = ac.nacelle_pivot_ref_m + it.shaft_offset_m * ac.shaft_axis_body(90)
             p0 = ac.nacelle_pivot_ref_m + it.shaft_offset_m * ac.shaft_axis_body(0)
-            rows.append(f"| {it.name} | {it.mass_kg:.0f} | {p90[0]:.2f} / {p0[0]:.2f} | {p90[2]:.2f} / {p0[2]:.2f} | "
+            rows.append(f"| {it.name} | {it.mass_kg:.0f} | {_f(p90[0])} / {_f(p0[0])} | {_f(p90[2])} / {_f(p0[2])} | "
                         f"tilts with nacelle (helicopter / airplane), y = +/-{ac.nacelle_pivot_ref_m[1]:.1f} m |")
         else:
             rows.append(f"| {it.name} | {it.mass_kg:.0f} | {it.x_m:.2f} | {it.z_m:.2f} | {it.category} |")
-    rows.append(f"| **Total (MTOW)** | **{ac.mass_kg():.0f}** | | | empty {M1.EMPTY_MASS_KG:.0f} + payload "
-                f"{M1.PAYLOAD_KG:.0f} + fuel {M1.FUEL_MASS_KG:.0f} |")
+    empty = ac.mass_kg() - M1.PAYLOAD_KG - CFG.FUEL_CAPACITY_KG
+    rows.append(f"| **Total (MTOW)** | **{ac.mass_kg():.0f}** | | | empty {empty:.0f} + payload "
+                f"{M1.PAYLOAD_KG:.0f} + fuel {CFG.FUEL_CAPACITY_KG:.0f} |")
     rows += ["", "| Loading | i_n [deg] | mass [kg] | CG x [m] | CG z [m] |", "|---|---|---|---|---|"]
-    for fuel, lab in ((M1.FUEL_MASS_KG, "MTOW, full fuel"), (M1.RESERVE_FUEL_KG, "reserve fuel")):
+    for fuel, lab in ((CFG.FUEL_CAPACITY_KG, "MTOW, full fuel"), (M1.RESERVE_FUEL_KG, "reserve fuel")):
         for n in (90.0, 45.0, 0.0):
             cg = ac.cg_ref_m(n, fuel_kg=fuel)
             rows.append(f"| {lab} | {n:.0f} | {ac.mass_kg(fuel_kg=fuel):.0f} | {cg[0]:+.3f} | {cg[2]:+.3f} |")
@@ -124,7 +136,7 @@ def mass_table(ac):
     rows += ["", "| Limit | Value |", "|---|---|",
              f"| Nacelle angle | {L.nacelle_deg[0]:.0f} .. {L.nacelle_deg[1]:.0f} deg, max rate {L.nacelle_rate_deg_s} deg/s |",
              f"| Rotor RPM | {L.rpm[0]:.0f} .. {L.rpm[1]:.0f} (schedule {CFG.HOVER_RPM:.0f} helicopter/conversion, "
-             f"{CFG.AIRPLANE_RPM:.0f} airplane) |",
+             f"{CFG.LONG_RANGE_RPM:.0f} / {CFG.AIRPLANE_RPM:.0f} / {CFG.DASH_RPM:.0f} airplane) |",
              f"| Collective | {L.collective_deg[0]:.0f} .. {L.collective_deg[1]:.0f} deg |",
              f"| Longitudinal / lateral cyclic | +/-{L.theta_1c_deg[1]:.0f} / +/-{L.theta_1s_deg[1]:.0f} deg |",
              f"| Elevator / flaperon / rudder | +/-{L.elevator_deg[1]:.0f} / +/-{ac.wing.aileron_limit_deg:.0f} / "
@@ -135,6 +147,9 @@ def mass_table(ac):
              f"| Rotor stalled loaded area | {100 * L.max_stall_fraction:.0f} % |",
              f"| Reverse-flow area | {100 * L.max_reverse_flow_fraction:.0f} % of disk |",
              f"| Power margin | {100 * L.min_power_margin_frac:.0f} % of available |",
+             f"| Engines | 2 x {CFG.ENGINE_NAME}, {CFG.POWER_PER_ENGINE_SL_W / 1e3:.0f} kW take-off each (SL), "
+             f"max continuous {100 * CFG.MCP_FRACTION:.0f} %, dry mass {CFG.ENGINE_DRY_MASS_KG:.0f} kg, "
+             f"SFC {CFG.ENGINE_SFC_KG_PER_J * 3.6e9:.0f} g/kWh |",
              f"| Installed power | 2 x {CFG.POWER_PER_ENGINE_SL_W / 1e3:.0f} kW (SL), lapse (rho/rho0)^"
              f"{M1.DENSITY_RATIO_EXPONENT}, drivetrain eff. {M1.DRIVETRAIN_EFFICIENCY} |",
              "", "Control mixing (normalized stick -> effector, rotor terms x sin^2(i_n)):", "",

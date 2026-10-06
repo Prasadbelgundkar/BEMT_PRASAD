@@ -51,10 +51,10 @@ def test_airplane_mode_too_slow_is_not_a_trim():
 
 
 def test_collective_saturation_is_reported():
-    tr = _trim(120.0, 0.0)
+    tr = _trim(140.0, 0.0)   # beyond the 125 m/s design dash at airplane-mode cruise RPM
     assert tr.status == 'control_saturation' and 'theta0' in tr.at_bound
 
 
 def test_power_flag_hot_and_high():
-    tr = _trim(0.0, 90.0, altitude_m=3000.0, dISA_K=20.0)
+    tr = _trim(0.0, 90.0, altitude_m=4000.0, dISA_K=20.0)   # above the ISA+20 hover ceiling (~3900 m)
     assert tr.status.startswith('ok') and 'power' in tr.flags and not tr.feasible

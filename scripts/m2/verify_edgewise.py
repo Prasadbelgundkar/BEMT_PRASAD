@@ -45,11 +45,11 @@ def section_3p1():
         return m1, m2a, m2u
 
     cases = [
-        ("Hover (V=0), 500 RPM", "Collective theta0 [deg]", np.arange(6.0, 26.1, 2.0),
+        (f"Hover (V=0), {CFG.HOVER_RPM:.0f} RPM", "Collective theta0 [deg]", np.arange(6.0, 26.1, 2.0),
          lambda c: (0.0, CFG.HOVER_OMEGA, c)),
-        ("Axial climb, 500 RPM, theta0=20 deg", "Climb speed V_c [m/s]", np.arange(0.0, 15.1, 2.5),
+        (f"Axial climb, {CFG.HOVER_RPM:.0f} RPM, theta0=20 deg", "Climb speed V_c [m/s]", np.arange(0.0, 15.1, 2.5),
          lambda v: (v, CFG.HOVER_OMEGA, 20.0)),
-        ("Airplane mode (axial), 420 RPM, theta0=48 deg", "Airspeed V [m/s]", np.arange(40.0, 100.1, 10.0),
+        (f"Airplane mode (axial), {CFG.AIRPLANE_RPM:.0f} RPM, theta0=48 deg", "Airspeed V [m/s]", np.arange(40.0, 100.1, 10.0),
          lambda v: (v, CFG.AIRPLANE_OMEGA, 48.0)),
     ]
     fig, axs = plt.subplots(2, 3, figsize=(14, 7.5))

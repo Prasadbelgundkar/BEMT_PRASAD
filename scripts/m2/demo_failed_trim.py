@@ -33,9 +33,9 @@ def cases():
         ("Airplane mode too slow", "V=40 m/s, i_n=0, 2000 m", ac, make_condition(40.0, 0.0, rpm=A), {}),
         ("Helicopter mode too fast", "V=70 m/s, i_n=90, 2000 m", ac, make_condition(70.0, 90.0), {}),
         ("Helicopter mode far beyond limits", "V=85 m/s, i_n=90, 2000 m", ac, make_condition(85.0, 90.0), {}),
-        ("Airplane mode overspeed", "V=120 m/s, i_n=0, 2000 m", ac, make_condition(120.0, 0.0, rpm=A), {}),
-        ("Hot-and-high hover", "V=0, i_n=90, 3000 m ISA+20", ac,
-         make_condition(0.0, 90.0, altitude_m=3000.0, dISA_K=20.0), {}),
+        ("Airplane mode overspeed", "V=140 m/s, i_n=0, 2000 m", ac, make_condition(140.0, 0.0, rpm=A), {}),
+        ("Hot-and-high hover", "V=0, i_n=90, 4000 m ISA+20", ac,
+         make_condition(0.0, 90.0, altitude_m=4000.0, dISA_K=20.0), {}),
         ("Forward CG (payload +5 m)", "V=60 m/s, i_n=0, 2000 m", payload_at(5.0),
          make_condition(60.0, 0.0, rpm=A), {}),
         ("Numerical: poor seed, 6 evaluations", "V=45 m/s, i_n=60, 2000 m", ac, make_condition(45.0, 60.0),
@@ -96,7 +96,7 @@ def main():
                 "Normalized force/moment residuals at the best solution found for seven off-design cases, with "
                 "the solver status and the diagnosed cause: physical infeasibility (wing stall at low airplane-mode "
                 "speed), trimmed-but-infeasible (power, tip Mach, rotor stall in fast helicopter mode, hot-and-high "
-                "hover power), insufficient control authority (collective at 120 m/s, elevator with a forward CG) "
+                "hover power), insufficient control authority (collective at 140 m/s, elevator with a forward CG) "
                 f"and a numerical failure that disappears with proper seeding. {RIGID_DISK_NOTE}.")
     write_text("m2_6p3_failed_trim.md",
                "# Section 6.3 -- failed-trim cases\n\n"

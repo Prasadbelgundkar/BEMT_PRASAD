@@ -43,13 +43,18 @@ pip install -r requirements.txt               # numpy, scipy, matplotlib, pytest
 pip install -r gui_app/requirements_gui.txt   # optional: Streamlit GUI
 ```
 
+**Hardware:** any 64-bit laptop or desktop with 2+ cores and 4 GB RAM. The solvers are vectorised on small
+grids, run one BLAS thread per process (set automatically) and use at most 4 worker processes for the
+corridor map (`--jobs N` to change). All result files are committed, so nothing has to be recomputed to read
+the results; the default `run_all_m2.py` reuses the cached corridor map.
+
 ---
 
 ## Tests
 
 ```bash
-python -m pytest                              # M1 + M2 (M1 rotor), configured in pytest.ini
-M2_ROTOR=refined python -m pytest tests/m2    # M2 tests on the refined rotor
+python -m pytest                              # M1 + M2 (design rotor 'refined'), configured in pytest.ini
+M2_ROTOR=M1 python -m pytest tests/m2         # M2 tests on the Milestone 1 blade
 ```
 
 Key regression tests: `tests/m2/test_m1_recovery.py` (edgewise solver reproduces M1 hover / climb / airplane
@@ -61,30 +66,36 @@ symmetry), `test_trim_6dof.py` (convergence, lateral symmetry, saturation / powe
 ## Milestone 2 — reproduce every graded figure and table
 
 ```bash
-python scripts/m2/run_all_m2.py                       # tests + both rotor variants
-python scripts/m2/run_all_m2.py --variants refined    # one variant only
-python scripts/m2/run_all_m2.py --recompute-corridor  # also re-solve the corridor map
+python scripts/m2/run_all_m2.py                          # tests + design rotor ('refined')
+python scripts/m2/run_all_m2.py --variants refined M1    # both rotor variants (Section 9.2 trade-off)
+python scripts/m2/run_all_m2.py --recompute-corridor     # also re-solve the corridor map
+python scripts/m2/run_all_m2.py --jobs 2                 # fewer worker processes for the corridor
 ```
 
 Outputs go to `outputs/m2/rotor_<variant>/`. Each folder has a `FIGURES.md` index (figure → report section →
-caption with flight condition and assumptions) plus markdown/CSV tables. Runtime: ~10 min per variant with
-the cached corridor (`corridor_grid.npz`); the corridor itself takes ~12–15 min per variant on all CPU cores.
+caption with flight condition and assumptions) plus markdown/CSV tables. Measured runtime (8 efficiency cores of
+a desktop CPU, similar to a mid-range laptop): tests 70 s; each variant ~10 min with the cached corridor
+(`corridor_grid.npz`), of which the two transition missions take ~6 min; re-solving the corridor adds ~5.5 min
+with `--jobs 8`, about twice that with the default 4 worker processes. A script that stops abnormally is run
+once more before it is reported as failed.
 
 ### Rotor variant switch
 
-The aircraft is defined once in `src/m2/aircraft_input_m2.py` (it imports the Milestone 1 rotor, airfoil,
-masses and fuel model from `src/aircraft_input.py`). Two rotor variants are available through an environment
-variable:
+The aircraft is defined once in `src/m2/aircraft_input_m2.py`. It takes the Milestone 1 design of record
+(`src/aircraft_input.py`: rotor planform, airfoil, 550 / 250 RPM, collective range, masses, power-lapse model)
+and adds the airframe, mass items / CG, control limits, the selected engines (2 × GE CT7-8A, from
+`engine_selection.py`) and the airplane-mode RPM schedule (250 RPM long-range cruise, 350 RPM to 100 m/s,
+420 RPM dash). Two blades are available through an environment variable:
 
-| `M2_ROTOR` | Blade twist | Helicopter-mode RPM | Notes |
-|---|---|---|---|
-| `M1` (default) | 25° root, −45°/R (Milestone 1 blade) | 500 | ~24 % of the hover disk stalled at MTOW / 2000 m |
-| `refined` | 12° root, −30°/R | 540 | stall-free hover, wider corridor, +11 % cruise power |
+| `M2_ROTOR` | Blade twist | Notes |
+|---|---|---|
+| `refined` (default, M2 design) | 12° root, −30°/R | less inboard pitch: removes the inboard hover stall of the M1 blade |
+| `M1` | 25° root, −45°/R (Milestone 1 blade) | kept for the Milestone 1 / Milestone 2 trade-off (Section 9.2) |
 
 ```bash
-set M2_ROTOR=refined            # Windows cmd
-$env:M2_ROTOR="refined"         # PowerShell
-export M2_ROTOR=refined         # bash
+set M2_ROTOR=M1                 # Windows cmd
+$env:M2_ROTOR="M1"              # PowerShell
+export M2_ROTOR=M1              # bash
 ```
 
 ### Scripts (`scripts/m2/`)
@@ -95,6 +106,7 @@ export M2_ROTOR=refined         # bash
 | `demo_rotor_control_sweep.py` | 4.1–4.3, 4.6 | single-rotor collective / θ1c / θ1s sweeps (FX…MZ, power, stall margin), control derivatives |
 | `plot_aircraft_schematic.py` | 5.1 | dimensioned top/side views drawn from the config |
 | `make_design_tables.py` | 5.2–5.5 | change log, rotor / wing / empennage / mass / CG / limit tables, blade distributions |
+| `engine_selection.py` | 5.2 | engine sizing: trimmed power required at the sizing conditions vs five candidate turboshafts |
 | `demo_trim_matrix.py` | 6.1, 6.2, 6.4 | 4 nacelle angles × 3 speeds, full 6-DOF trim table, trends, lift sharing |
 | `demo_failed_trim.py` | 6.3 | seven failed cases, each classified (numerical, control, stall, power, tip Mach, physical) |
 | `demo_corridor_map.py` | 7.1, 7.2 | 13 × 21 speed–nacelle map (6-DOF trim at every point), constraint fields |

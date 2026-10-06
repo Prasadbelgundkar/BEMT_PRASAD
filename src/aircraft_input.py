@@ -1,9 +1,9 @@
 """
-aircraft_input.py  --  MASTER USER-EDITABLE CONFIGURATION FILE
-================================================================
-Edit ONLY this file to define your tiltrotor aircraft.
-All analysis scripts in scripts/ import from here.
-Do NOT modify any other source file to change the aircraft design.
+aircraft_input.py  --  MILESTONE 1 AIRCRAFT CONFIGURATION
+==========================================================
+Single definition of the tiltrotor (rotor, airfoil, masses, engines, fuel
+model, limits). The analysis scripts and the Milestone 2 configuration
+(m2/aircraft_input_m2.py) import the design from here.
 """
 import numpy as np, sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -25,7 +25,7 @@ AIRFOIL = LinearAirfoil(
 )
 AIRFOIL_NAME = "Linear (a0=5.75, Cd=0.0113+1.25*alpha^2)"
 
-# Option B: Tabulated polar -- uncomment and fill with your airfoil data
+# Option B: tabulated polar (not used in the reported results)
 # AIRFOIL = TableAirfoil(
 #     alpha_deg=[-12, -8, -4, 0, 4, 8, 12, 14, 16],
 #     Cl=      [-1.0, -0.6,-0.2, 0.2, 0.6, 1.0, 1.3, 1.35, 1.2],
@@ -67,20 +67,19 @@ ROTOR = Rotor(
 # ============================================================
 # SECTION 3 -- RPM SCHEDULE
 # ============================================================
-HOVER_RPM  = 500.0   # rotor speed in hover / helicopter mode [RPM]
-CRUISE_RPM = 700.0   # rotor speed in axial cruise / propeller mode [RPM]
-                     # At J~0.57 (V=74 m/s, 700 RPM, R=3.8 m), tip Mach~0.87
+HOVER_RPM  = 550.0   # rotor speed in hover / climb [RPM]
+CRUISE_RPM = 250.0   # rotor speed in airplane-mode cruise [RPM] (74.3 m/s, 7000 m: J ~ 2.35)
 
 HOVER_OMEGA  = 2 * np.pi * HOVER_RPM  / 60.0   # [rad/s]
 CRUISE_OMEGA = 2 * np.pi * CRUISE_RPM / 60.0   # [rad/s]
 
 # Collective pitch limits [deg] -- on top of built-in twist
-MIN_COLLECTIVE_DEG = -5.0
-MAX_COLLECTIVE_DEG = 25.0
+MIN_COLLECTIVE_DEG = -10.0
+MAX_COLLECTIVE_DEG = 65.0
 
 # Default collective angles (auto-trim will refine hover collective)
-HOVER_COLLECTIVE_DEG  = 10.0   # initial guess [deg]
-CRUISE_COLLECTIVE_DEG = 20.0   # propeller-mode cruise [deg]
+HOVER_COLLECTIVE_DEG  = 8.0    # initial guess [deg]
+CRUISE_COLLECTIVE_DEG = 56.5   # airplane-mode cruise trim, 74.3 m/s at 7000 m [deg]
 
 # ============================================================
 # SECTION 4 -- TWIN-ROTOR ARRANGEMENT
@@ -100,25 +99,28 @@ RESERVE_FUEL_KG =  450.0   # mandatory reserve fuel
 # SECTION 6 -- PERFORMANCE REQUIREMENTS & ENVIRONMENT
 # ============================================================
 TAKEOFF_ALTITUDE_M  =    0.0   # takeoff / hover altitude [m ASL]
-SERVICE_CEILING_M   = 3000.0   # max hover OGE ceiling [m]
-CRUISE_ALTITUDE_M   = 3000.0   # cruise altitude [m]
+SERVICE_CEILING_M   = 7000.0   # service ceiling [m]
+CRUISE_ALTITUDE_M   = 7000.0   # cruise altitude [m]
 dISA_K              =    0.0   # ISA temperature offset [K]; 0 = standard day
+HOVER_REQ_ALTITUDE_M = 1500.0  # OGE hover requirement at MTOW: up to 1500 m ...
+HOVER_REQ_DISA_K     =   15.0  # ... at ISA + 15 K
 
-CRUISE_SPEED_MPS    =   40.0  # design cruise true airspeed [m/s]  (J~0.57 at 700 RPM)
-RANGE_TARGET_KM     =  200.0   # design range target [km]
+CRUISE_SPEED_MPS    =   74.3   # design cruise true airspeed [m/s]
+MAX_SPEED_TARGET_MPS =  125.0  # 450 km/h speed target [m/s]
+RANGE_TARGET_KM     = 1000.0   # design range target [km]
 HOVER_ENDURANCE_MIN =   30.0   # minimum hover endurance [min]
 
-# Equivalent flat-plate drag area of aircraft (fuselage + wing) in cruise [m^2]
+# Equivalent flat-plate drag area of aircraft (fuselage + nacelles) in cruise [m^2]
 # Propulsive thrust required = 0.5 * rho * V^2 * FLAT_PLATE_AREA_M2
 # Typical V-22 class: 1.5 -- 3.0 m^2
-FLAT_PLATE_AREA_M2 = 1.8
+FLAT_PLATE_AREA_M2 = 1.7
 
 # ============================================================
 # SECTION 7 -- POWER AVAILABLE MODEL
 # ============================================================
-SEA_LEVEL_TOTAL_POWER_W = 400_000.0    # total installed shaft power [W] (both rotors)
-DENSITY_RATIO_EXPONENT  = 0.9          # P ~ P_SL * (rho/rho_SL)^exponent
-DRIVETRAIN_EFFICIENCY   = 0.94         # gearbox + shaft losses
+SEA_LEVEL_TOTAL_POWER_W = 2 * 1_880_000.0  # total installed shaft power [W] (2 turboshafts)
+DENSITY_RATIO_EXPONENT  = 1.0          # P ~ P_SL * (rho/rho_SL)^exponent
+DRIVETRAIN_EFFICIENCY   = 0.95         # gearbox + shaft losses
 
 SEA_LEVEL_POWER_PER_ROTOR_W = SEA_LEVEL_TOTAL_POWER_W / NUM_ROTORS
 
@@ -131,8 +133,8 @@ POWER_MODEL = PowerAvailableModel(
 # ============================================================
 # SECTION 8 -- FUEL MODEL (TURBOSHAFT)
 # ============================================================
-# SFC [kg per joule of shaft energy]: 8e-8 kg/J == 0.288 kg/kWh
-SFC_KG_PER_J = 8.0e-8
+# SFC [kg per joule of shaft energy]: 8.33e-8 kg/J == 0.30 kg/kWh
+SFC_KG_PER_J = 8.33e-8
 FUEL_MODEL = FuelModel(sfc_kg_per_J=SFC_KG_PER_J)
 
 # ============================================================
@@ -141,7 +143,7 @@ FUEL_MODEL = FuelModel(sfc_kg_per_J=SFC_KG_PER_J)
 MAX_TIP_MACH          = 0.85
 MAX_STALL_FRACTION    = 0.05   # 5% of blade span
 MIN_POWER_MARGIN_FRAC = 0.05   # 5% power margin
-MIN_RPM = 300.0
+MIN_RPM = 250.0
 MAX_RPM = 900.0
 
 LIMITS = DesignLimits(

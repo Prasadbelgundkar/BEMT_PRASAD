@@ -9,7 +9,7 @@
  },
  "m2_6p3_failed_trim": {
   "section": "6.3",
-  "caption": "Normalized force/moment residuals at the best solution found for seven off-design cases, with the solver status and the diagnosed cause: physical infeasibility (wing stall at low airplane-mode speed), trimmed-but-infeasible (power, tip Mach, rotor stall in fast helicopter mode, hot-and-high hover power), insufficient control authority (collective at 120 m/s, elevator with a forward CG) and a numerical failure that disappears with proper seeding. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Normalized force/moment residuals at the best solution found for seven off-design cases, with the solver status and the diagnosed cause: physical infeasibility (wing stall at low airplane-mode speed), trimmed-but-infeasible (power, tip Mach, rotor stall in fast helicopter mode, hot-and-high hover power), insufficient control authority (collective at 140 m/s, elevator with a forward CG) and a numerical failure that disappears with proper seeding. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_3p1_m1_recovery": {
   "section": "3.1",
@@ -17,11 +17,11 @@
  },
  "m2_3p2_sectional_loads_polar": {
   "section": "3.2",
-  "caption": "Polar contours of sectional thrust and in-plane force per blade [N/m] over the rotor disk (right rotor, CCW from above, psi = 0 aft, advancing side on the right). Trimmed V=40 m/s, i_n=90 deg, h=2000 m ISA, 540 RPM, m=7200 kg, mu = 0.185; theta0=22.32, theta1c=4.01, theta1s=0.00 deg, alpha_body=-5.52 deg, alpha_shaft=5.52 deg. White dashed line: reverse-flow boundary U_T = 0. Grey: root cut-out. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Polar contours of sectional thrust and in-plane force per blade [N/m] over the rotor disk (right rotor, CCW from above, psi = 0 aft, advancing side on the right). Trimmed V=40 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg, mu = 0.182; theta0=21.86, theta1c=3.68, theta1s=0.00 deg, alpha_body=-5.41 deg, alpha_shaft=5.41 deg. White dashed line: reverse-flow boundary U_T = 0. Grey: root cut-out. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_3p2_blade_loads_vs_psi": {
   "section": "3.2",
-  "caption": "Radially integrated per-blade thrust, in-plane force and flapwise root moment vs azimuth over two revolutions; the solution is exactly 2pi-periodic (no transient), the 1/rev content shows the advancing/retreating asymmetry. Trimmed V=40 m/s, i_n=90 deg, h=2000 m ISA, 540 RPM, m=7200 kg."
+  "caption": "Radially integrated per-blade thrust, in-plane force and flapwise root moment vs azimuth over two revolutions; the solution is exactly 2pi-periodic (no transient), the 1/rev content shows the advancing/retreating asymmetry. Trimmed V=40 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg."
  },
  "m2_3p3_UT_reverse_flow_mach_stall": {
   "section": "3.3",
@@ -29,35 +29,35 @@
  },
  "m2_3p4_grid_sensitivity": {
   "section": "3.4",
-  "caption": "Thrust and torque of one rotor vs number of radial stations (n_psi fixed at 72) and azimuth stations (n_r fixed at 60) at the trimmed representative condition V=40 m/s, i_n=90 deg, h=2000 m ISA, 540 RPM, m=7200 kg. Band: +/-0.5 % of the finest grid. Dashed: grids used for trim/corridor (25 x 36) and for plots (40 x 72)."
+  "caption": "Thrust and torque of one rotor vs number of radial stations (n_psi fixed at 72) and azimuth stations (n_r fixed at 60) at the trimmed representative condition V=40 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg. Band: +/-0.5 % of the finest grid. Dashed: grids used for trim/corridor (25 x 36) and for plots (40 x 72)."
  },
  "m2_4p1_collective_sweep_condA": {
   "section": "4.1",
-  "caption": "Collective pitch theta0 sweep of the right (CCW) rotor at condition A (helicopter-like edgewise flight): V=30 m/s, i_n=90 deg, h=2000 m ISA, 540 RPM, m=7200 kg, mu = 0.139, other inputs held at trim (theta0=22.45, theta1c=4.07, theta1s=0.00 deg, alpha_body=-4.17 deg, alpha_shaft=4.17 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 0.3-0.3 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Collective pitch theta0 sweep of the right (CCW) rotor at condition A (helicopter-like edgewise flight): V=30 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg, mu = 0.137, other inputs held at trim (theta0=22.02, theta1c=3.74, theta1s=0.00 deg, alpha_body=-4.10 deg, alpha_shaft=4.10 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 0.3-0.3 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_4p2_theta1c_sweep_condA": {
   "section": "4.2",
-  "caption": "Longitudinal cyclic theta1c sweep of the right (CCW) rotor at condition A (helicopter-like edgewise flight): V=30 m/s, i_n=90 deg, h=2000 m ISA, 540 RPM, m=7200 kg, mu = 0.139, other inputs held at trim (theta0=22.45, theta1c=4.07, theta1s=0.00 deg, alpha_body=-4.17 deg, alpha_shaft=4.17 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 0.3-0.3 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Longitudinal cyclic theta1c sweep of the right (CCW) rotor at condition A (helicopter-like edgewise flight): V=30 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg, mu = 0.137, other inputs held at trim (theta0=22.02, theta1c=3.74, theta1s=0.00 deg, alpha_body=-4.10 deg, alpha_shaft=4.10 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 0.3-0.3 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_4p3_theta1s_sweep_condA": {
   "section": "4.3",
-  "caption": "Lateral cyclic theta1s sweep of the right (CCW) rotor at condition A (helicopter-like edgewise flight): V=30 m/s, i_n=90 deg, h=2000 m ISA, 540 RPM, m=7200 kg, mu = 0.139, other inputs held at trim (theta0=22.45, theta1c=4.07, theta1s=0.00 deg, alpha_body=-4.17 deg, alpha_shaft=4.17 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 0.3-0.3 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Lateral cyclic theta1s sweep of the right (CCW) rotor at condition A (helicopter-like edgewise flight): V=30 m/s, i_n=90 deg, h=2000 m ISA, 550 RPM, m=7200 kg, mu = 0.137, other inputs held at trim (theta0=22.02, theta1c=3.74, theta1s=0.00 deg, alpha_body=-4.10 deg, alpha_shaft=4.10 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 0.3-0.3 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_4p1_collective_sweep_condB": {
   "section": "4.6",
-  "caption": "Collective pitch theta0 sweep of the right (CCW) rotor at condition B (intermediate conversion): V=45 m/s, i_n=60 deg, h=2000 m ISA, 540 RPM, m=7200 kg, mu = 0.195, other inputs held at trim (theta0=19.19, theta1c=-0.71, theta1s=0.00 deg, alpha_body=8.73 deg, alpha_shaft=21.27 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 1.7-1.7 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Collective pitch theta0 sweep of the right (CCW) rotor at condition B (intermediate conversion): V=45 m/s, i_n=60 deg, h=2000 m ISA, 550 RPM, m=7200 kg, mu = 0.192, other inputs held at trim (theta0=18.94, theta1c=-0.82, theta1s=-0.00 deg, alpha_body=8.80 deg, alpha_shaft=21.20 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 1.6-1.6 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_4p2_theta1c_sweep_condB": {
   "section": "4.6",
-  "caption": "Longitudinal cyclic theta1c sweep of the right (CCW) rotor at condition B (intermediate conversion): V=45 m/s, i_n=60 deg, h=2000 m ISA, 540 RPM, m=7200 kg, mu = 0.195, other inputs held at trim (theta0=19.19, theta1c=-0.71, theta1s=0.00 deg, alpha_body=8.73 deg, alpha_shaft=21.27 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 1.7-1.7 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Longitudinal cyclic theta1c sweep of the right (CCW) rotor at condition B (intermediate conversion): V=45 m/s, i_n=60 deg, h=2000 m ISA, 550 RPM, m=7200 kg, mu = 0.192, other inputs held at trim (theta0=18.94, theta1c=-0.82, theta1s=-0.00 deg, alpha_body=8.80 deg, alpha_shaft=21.20 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 1.6-1.6 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_4p3_theta1s_sweep_condB": {
   "section": "4.6",
-  "caption": "Lateral cyclic theta1s sweep of the right (CCW) rotor at condition B (intermediate conversion): V=45 m/s, i_n=60 deg, h=2000 m ISA, 540 RPM, m=7200 kg, mu = 0.195, other inputs held at trim (theta0=19.19, theta1c=-0.71, theta1s=0.00 deg, alpha_body=8.73 deg, alpha_shaft=21.27 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 1.7-1.7 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Lateral cyclic theta1s sweep of the right (CCW) rotor at condition B (intermediate conversion): V=45 m/s, i_n=60 deg, h=2000 m ISA, 550 RPM, m=7200 kg, mu = 0.192, other inputs held at trim (theta0=18.94, theta1c=-0.82, theta1s=-0.00 deg, alpha_body=8.80 deg, alpha_shaft=21.20 deg). Rotor loads on the aircraft in body axes; moments about the CG (solid) and the hub (dashed). Power vs power available per rotor at 2000 m; stall margin over the loaded forward-flow disk. Reverse-flow area 1.6-1.6 % of the grid. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_7p1_conversion_corridor": {
   "section": "7.1",
-  "caption": "Speed-nacelle feasibility map: 13 nacelle angles x 21 airspeeds = 273 6-DOF trim solutions (105 feasible). Fixed: 2000 m ISA, MTOW 7200 kg, gamma = 0, no acceleration, 540 RPM, CG from the mass breakdown at each nacelle angle. Colour: primary active constraint; lines: limit contours of each margin (converged region only); black: operational conversion path flown in Mission Planner v2. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor; no rotor-wake/wing interference."
+  "caption": "Speed-nacelle feasibility map: 13 nacelle angles x 21 airspeeds = 273 6-DOF trim solutions (103 feasible). Fixed: 2000 m ISA, MTOW 7200 kg, gamma = 0, no acceleration, 550 RPM, CG from the mass breakdown at each nacelle angle. Colour: primary active constraint; lines: limit contours of each margin (converged region only); black: operational conversion path flown in Mission Planner v2. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor; no rotor-wake/wing interference."
  },
  "m2_7p2_constraint_boundaries": {
   "section": "7.2",
@@ -73,7 +73,7 @@
  },
  "m2_8p2_inbound_time_history": {
   "section": "8.2",
-  "caption": "Section 8 -- Inbound: airplane-mode-to-hover reconversion and landing: time histories of altitude, airspeed and ground speed, nacelle angle, rotor RPM, collective, longitudinal cyclic / elevator / pitch attitude, power required vs available, fuel remaining and rotor and wing stall margins from Mission Planner v2 with the 6-DOF trim solved at every step. Start altitude 2250 m ISA, start mass 6600 kg, 5 m/s headwind aloft (calm at the pad); 0 limit violations. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
+  "caption": "Section 8 -- Inbound: airplane-mode-to-hover reconversion and landing: time histories of altitude, airspeed and ground speed, nacelle angle, rotor RPM, collective, longitudinal cyclic / elevator / pitch attitude, power required vs available, fuel remaining and rotor and wing stall margins from Mission Planner v2 with the 6-DOF trim solved at every step. Start altitude 2250 m ISA, start mass 6630 kg, 5 m/s headwind aloft (calm at the pad); 0 limit violations. rotor variant 'refined' (twist 12 deg root, -30 deg/R); rigid disk (no flapping), quasi-steady linear airfoil (a0=5.75/rad, stall 14 deg), annular-Glauert inflow + K-factor."
  },
  "m2_8p2_paths_on_corridor": {
   "section": "8.2",
@@ -85,6 +85,10 @@
  },
  "m2_9p1_power_comparison": {
   "section": "9.1",
-  "caption": "Total power required vs airspeed at 2000 m ISA and MTOW, 540 RPM: Milestone 1 axial predictions (hover and axial airplane mode with the M1 flat-plate + induced drag model) against the Milestone 2 6-DOF trimmed aircraft in helicopter mode, airplane mode and the minimum-power envelope over the feasible conversion corridor (annotated with the best nacelle angle)."
+  "caption": "Total power required vs airspeed at 2000 m ISA and MTOW, 550 RPM: Milestone 1 axial predictions (hover and axial airplane mode with the M1 flat-plate + induced drag model) against the Milestone 2 6-DOF trimmed aircraft in helicopter mode, airplane mode and the minimum-power envelope over the feasible conversion corridor (annotated with the best nacelle angle)."
+ },
+ "m2_5p2_engine_selection": {
+  "section": "5.2",
+  "caption": "Power required by the trimmed aircraft in airplane mode (350 RPM to 100 m/s, 420 RPM above) at 2000 m and 7000 m ISA and in hover / vertical climb at 2000 m, against the max-continuous power available (both engines, drivetrain 0.95, sigma^1.0 lapse) of five candidate turboshafts; the selected engine is drawn bold. MTOW 7200 kg. Grey line: 450 km/h top-speed target."
  }
 }
