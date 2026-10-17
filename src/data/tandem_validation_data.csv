@@ -1,0 +1,12 @@
+# NACA TN-3236 (1954) Dingeldein Multirotor Wind Tunnel Investigation
+# Modern Standard Nondimensional Coefficients (CT = T / (rho * A * Vtip^2), CP = P / (rho * A * Vtip^3))
+# Rotor Geometry: Radius = 1.3716 m (4.5 ft), Chord = 0.1167 m, Blades = 2, Airfoil = NACA 0012
+# Configuration: Isolated Single Rotor vs. Tandem Overlapping Rotors (d/R = 1.54, Overlap ~ 12.8% to 14.5% disk area)
+# Reference: Dingeldein, R. C., "Wind-Tunnel Studies of the Performance of Multirotor Configurations," NACA TN-3236, 1954.
+collective_deg,CT_isolated_exp,CP_isolated_exp,CT_tandem_exp,CP_tandem_exp
+2.0,0.00057,0.000075,0.00054,0.000074
+4.0,0.00155,0.000120,0.00150,0.000121
+6.0,0.00268,0.000195,0.00260,0.000198
+8.0,0.00390,0.000305,0.00378,0.000310
+10.0,0.00518,0.000445,0.00504,0.000455
+12.0,0.00645,0.000620,0.00630,0.000635

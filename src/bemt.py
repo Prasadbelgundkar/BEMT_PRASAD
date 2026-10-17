@@ -73,6 +73,16 @@ class RotorPerformance:
     max_tip_mach: float
     converged: bool
 
+    def mean_induced_velocity(self) -> float:
+        """Area-weighted mean induced velocity [m/s] across the blade elements."""
+        if not self.elements:
+            return 0.0
+        r = np.array([e.r for e in self.elements])
+        v = np.array([e.v_induced for e in self.elements])
+        num = _trapz(v * r, r)
+        den = _trapz(r, r)
+        return float(num / den) if den > 0 else float(np.mean(v))
+
 
 def prandtl_tip_loss(B: int, R: float, r: float, phi: float,
                       root_cutout: float = 0.0, include_root_loss: bool = False) -> float:

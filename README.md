@@ -1,13 +1,9 @@
-# Tiltrotor BEMT + Mission Planner — Milestone 1 & 2 Codebase
+# Tiltrotor BEMT + Mission Planner — Milestone 1, 2 & Modeling Project Codebase
 
 Modular Python implementation of a BEMT rotor-performance tool, a 6-DOF trim solver, a conversion-corridor
-mapper and a time-stepped Mission Planner, used to evaluate the team's tiltrotor across hover, conversion and
-airplane-mode flight.
-
-> **Bonus — 3D transition simulation.** The file to run is
-> **`bonus_simulation_transition_analysis/run_transition_simulation.py`**; it writes an interactive 3D animation
-> of the hover → airplane conversion to `bonus_simulation_transition_analysis/output/`. See
-> [Bonus — 3D transition simulation](#bonus--3d-transition-simulation) below.
+mapper, a time-stepped Mission Planner, and a tandem-rotor aerodynamic interference model — used to evaluate
+the team's tiltrotor across hover, conversion and airplane-mode flight, and to characterise tandem-rotor
+interference for the Modeling Project.
 
 ---
 
@@ -15,29 +11,33 @@ airplane-mode flight.
 
 ```
 .
-├── src/                    solver library (imported by every script)
-│   ├── *.py                Milestone 1: ISA, airfoil, rotor, axial BEMT, mission planner v1, sizing
-│   ├── data/               Knight & Hefner validation data, airfoil tables
-│   └── m2/                 Milestone 2: edgewise BEMT, frames, airframe aero, 6-DOF trim, corridor, mission v2
+├── src/                         solver library (imported by every script)
+│   ├── *.py                     Milestone 1: ISA, airfoil, rotor, axial BEMT, mission planner v1, sizing
+│   ├── tandem_interference.py   Modeling Project: tandem rotor aerodynamic interference model
+│   ├── tandem_rotor_config.py   Modeling Project: CH-47 Chinook class baseline configuration
+│   ├── data/                    Knight & Hefner + Dingeldein (NACA TN-3236) validation datasets
+│   └── m2/                      Milestone 2: edgewise BEMT, frames, airframe aero, 6-DOF trim, corridor, mission v2
 ├── scripts/
-│   ├── m1/                 Milestone 1 figure scripts (hover, axial flight, design study, mission v1)
-│   │   └── mission_tests/  Mission Planner v1 evaluation cases
-│   └── m2/                 Milestone 2 figure/table scripts (run_all_m2.py runs everything)
+│   ├── m1/                      Milestone 1 figure scripts (hover, axial flight, design study, mission v1)
+│   │   └── mission_tests/       Mission Planner v1 evaluation cases
+│   ├── m2/                      Milestone 2 figure/table scripts (run_all_m2.py runs everything)
+│   └── mp/                      Modeling Project figure scripts (tandem rotor interference)
 ├── bonus_simulation_transition_analysis/
 │   ├── run_transition_simulation.py   ← RUN THIS for the bonus 3D transition simulation
-│   └── output/             generated interactive HTML animations (open in a web browser)
+│   └── output/                  generated interactive HTML animations (open in a web browser)
 ├── outputs/
-│   ├── m1/                 Milestone 1 figures
-│   └── m2/rotor_<variant>/ Milestone 2 figures, tables and FIGURES.md index per rotor variant
-├── tests/                  pytest suite (M1 solver + M2 regression tests)
-├── examples/               short usage examples of the solver API
-├── gui_app/                optional Streamlit GUI (uses src/)
+│   ├── m1/                      Milestone 1 figures
+│   ├── m2/rotor_<variant>/      Milestone 2 figures, tables and FIGURES.md index per rotor variant
+│   └── mp/                      Modeling Project figures (validation, assessment, parameter study)
+├── tests/                       pytest suite (M1 + M2 regression tests + tandem interference unit tests)
+├── examples/                    short usage examples of the solver API
+├── gui_app/                     optional Streamlit GUI (uses src/)
 ├── docs/
-│   ├── milestone1/         assignment brief, formulas, flow diagrams, validation/sizing reports
-│   │   └── reports/        Milestone 1 analysis write-ups (Sections 6–7)
-│   └── milestone2/         Milestone 2 algorithms and logic flow
+│   ├── milestone1/              assignment brief, formulas, flow diagrams, validation/sizing reports
+│   │   └── reports/             Milestone 1 analysis write-ups (Sections 6–7)
+│   └── milestone2/              Milestone 2 algorithms and logic flow
 ├── requirements.txt
-└── setup.bat / setup.sh    install the requirements (Windows / macOS-Linux)
+└── setup.bat / setup.sh         install the requirements (Windows / macOS-Linux)
 ```
 
 All commands below are run from the repository root.
@@ -61,13 +61,16 @@ the results; the default `run_all_m2.py` reuses the cached corridor map.
 ## Tests
 
 ```bash
-python -m pytest                              # M1 + M2 (design rotor 'refined'), configured in pytest.ini
+python -m pytest                              # all 118 tests: M1 + M2 + tandem interference
 M2_ROTOR=M1 python -m pytest tests/m2         # M2 tests on the Milestone 1 blade
+python -m pytest tests/test_tandem_interference.py -v   # 13 tandem-rotor unit tests only
 ```
 
 Key regression tests: `tests/m2/test_m1_recovery.py` (edgewise solver reproduces M1 hover / climb / airplane
 mode to < 1 % on the design rotor), `test_edgewise_vectorized.py` (vectorized = original loop, CW/CCW mirror
-symmetry), `test_trim_6dof.py` (convergence, lateral symmetry, saturation / power / wing-stall classification).
+symmetry), `test_trim_6dof.py` (convergence, lateral symmetry, saturation / power / wing-stall classification),
+`test_tandem_interference.py` (zero/full overlap limits, asymmetric radii, Coleman wake progression, baseline
+recovery, spanwise convergence, auto-trim — 13/13 passing).
 
 ---
 
@@ -153,6 +156,105 @@ Early-draft demos (`demo_control_sweep.py`, `demo_azimuthal_loading.py`, `demo_t
   margin, wing α below stall, controls within bounds, nacelle rate ≤ 8°/s.
 
 Full description: [`docs/milestone2/Milestone_2_Architecture.md`](docs/milestone2/Milestone_2_Architecture.md).
+
+---
+
+## Modeling Project — Tandem rotor interference
+
+### Aerodynamic interference model
+
+In a tandem rotorcraft, longitudinal disk overlap places the aft rotor partially inside the downwash wake shed by the forward rotor, increasing aft rotor induced velocity and power required. The model combines:
+
+* **Vortex-cylinder wake contraction (Coleman 1947, NACA TN-1218):**
+  Axial downwash at vertical distance *z* downstream:
+
+  $$v_{\text{wake}}(z) = v_i \left(1 + \dfrac{z}{\sqrt{R_{\text{fwd}}^2 + z^2}}\right)$$
+
+  transitioning from $v_i$ at the disk plane ($z=0$) to $2 v_i$ in the far wake ($z \to \infty$).
+
+* **Asymmetric two-circle overlap ($\kappa$):**
+  Planform overlap area between two circular disks of radii $R_{\text{fwd}}$ and $R_{\text{aft}}$ separated by distance $d$:
+
+  $$\kappa = \frac{A_{\text{overlap}}}{\pi R_{\text{aft}}^2}$$
+
+  Handles separated ($d \ge R_1 + R_2$), tangent, concentric, and unequal-radii disks without singularities.
+
+The ingested downwash increment applied across the aft rotor span is:
+
+$$\Delta v_{\text{axial}} = \kappa \cdot v_{\text{wake}}(z_{\text{sep}})$$
+
+Solved via a two-pass coupled BEMT approach: forward rotor solved in clean air $\to$ downwash increment computed $\to$ aft rotor solved with augmented axial inflow.
+
+**Model selection rationale:** A closed-form analytical approach based on momentum and vortex cylinder theory was selected because it requires zero empirical calibration constants, evaluates in under a millisecond, and is directly compatible with the blade element framework. Higher-order methods (free-wake or CFD) would be computationally disproportionate for preliminary design and parameter sweeps.
+
+### Modules (`src/`)
+
+| File | Content |
+|---|---|
+| `tandem_interference.py` | Core model: `compute_overlap_fraction()`, `coleman_wake_velocity()`, `solve_tandem_bemt()`, `trim_tandem_hover()`, `TandemPerformance` |
+| `tandem_rotor_config.py` | Boeing CH-47 Chinook baseline parameters and rotor builders |
+| `data/tandem_validation_data.csv` | Digitised hover data from Dingeldein (1954, NACA TN-3236) |
+
+### Baseline rotorcraft (CH-47 Chinook class)
+
+| Parameter | Value |
+|---|---|
+| Rotor radius *R* | 9.14 m (30 ft) |
+| Shaft separation *d* | 13.60 m (1.487 *R*) |
+| Planform disk overlap | 14.94 % |
+| Gross mass (MTOW) | 22 680 kg (50 000 lb) |
+| Blade count (fwd / aft) | 3 / 3 |
+| Tip speed | 220 m/s |
+
+### Scripts & reproduction (`scripts/mp/`, figures to `outputs/mp/`)
+
+```bash
+# 1. Validation against Dingeldein (1954, NACA TN-3236) wind-tunnel data
+python scripts/mp/plot_tandem_validation.py
+# -> CT MAPE = 1.42%, CP MAPE = 4.54% (saved to outputs/mp/tandem_validation_dingeldein.png)
+
+# 2. CH-47 hover assessment (SL ISA and Hot-and-High comparison)
+python scripts/mp/plot_tandem_hover_assessment.py
+# -> saved to outputs/mp/tandem_hover_assessment.png
+
+# 3. Parameter sweeps (spacing, radius ratio, pylon stagger, thrust split)
+python scripts/mp/plot_tandem_parameter_study.py
+# -> saved to outputs/mp/tandem_parameter_study.png
+```
+
+### Assessment results summary
+
+| Flight Condition | Baseline Power | Augmented Power | Penalty | Δ*FM* |
+|---|---|---|---|---|
+| Sea Level ISA | 4 346.6 kW | 4 502.8 kW | **+156.2 kW (+3.6%)** | −0.024 |
+| Hot-and-High (1500 m, ISA+15 K) | 4 752.1 kW | 4 928.3 kW | **+176.2 kW (+3.7%)** | −0.024 |
+
+* **Trim collective:** Aft rotor requires **+0.49°** (SL) / **+0.56°** (Hot-and-High) additional collective pitch to maintain equal thrust split under downwash immersion.
+* **Separation sweep:** Increasing $d/R$ from 1.0 to 2.0 eliminates overlap (39.1% $\to$ 0%) and recovers 156 kW.
+* **Pylon stagger:** Elevating the aft rotor ($z/R > 0.15$) reduces direct downwash ingestion.
+* **Thrust split:** A slight forward bias (51% fwd / 49% aft) unloads the wake-immersed aft disk, reducing total power.
+
+### Unit tests (`tests/test_tandem_interference.py`)
+
+Thirteen unit tests cover limiting cases and numerical robustness (run via `pytest tests/test_tandem_interference.py`):
+* Zero overlap ($d \ge R_1 + R_2 \to \kappa = 0$; identical to isolated rotor)
+* Full overlap ($d = 0, R_1 = R_2 \to \kappa = 1$)
+* Analytical circle intersection match at $d = R$ (error $< 10^{-7}$)
+* Asymmetric radii bounds ($\kappa \in [0, 1]$)
+* Coleman limits ($z=0 \to \Delta v = v_i$; $z \to \infty \to \Delta v = 2 v_i$)
+* Baseline toggle recovery (`include_interference=False` matches isolated BEMT)
+* Physical direction checks (power increases, FM decreases)
+* Radial grid convergence ($N = 40, 80, 120$ differ $< 0.3\%$)
+* Hover auto-trim convergence (target thrust within $0.05\%$)
+
+### References
+
+1. Coleman, R. P. & Feingold, A. M. (1947). *Theory of Self-Excited Mechanical Oscillations of Helicopter Rotors with Hinged Blades.* NACA TN-1351.
+2. Coleman, R. P. (1947). *A Survey of the Ground-Vibration Characteristics of Helicopters.* NACA TN-1218.
+3. Dingeldein, R. C. (1954). *Wind-Tunnel Studies of the Performance of Multirotor Configurations.* NACA TN-3236.
+4. Johnson, W. (1980). *Helicopter Theory.* Princeton University Press. §3.5.
+5. Stepniewski, W. Z. & Keys, C. N. (1984). *Rotary-Wing Aerodynamics.* Dover. Vol. II, Ch. 6.
+
 
 ---
 
